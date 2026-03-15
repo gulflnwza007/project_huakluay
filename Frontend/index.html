@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Health Tracker Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>ยินดีต้อนรับคุณ <span id="usernameDisplay">...</span></h1>
+    <div class="card" style="display: flex; align-items: center; justify-content: space-between;">
+    <div>
+        <h3 style="margin: 0;">ดัชนีมวลกาย (BMI) ของคุณ: <span id="bmiValue">--</span></h3>
+        <p id="bmiStatus" style="margin: 5px 0 0 0; font-weight: bold;"></p>
+    </div>
+    <div id="bmiIndicator" style="width: 50px; height: 50px; border-radius: 50%; background: #ccc;"></div>
+</div>
+    <div class="grid">
+        <div class="card">
+            <h2>บันทึกสุขภาพวันนี้</h2>
+            <form id="dailyLogForm">
+                <div class="form-group">
+                    <label>วันที่บันทึก</label>
+                    <input type="date" id="logDate" required>
+                </div>
+                <div class="form-group">
+                    <label>น้ำหนัก (kg)</label>
+                    <input type="number" step="0.1" id="weight" required>
+                </div>
+                <div class="form-group">
+                    <label>แคลอรี่ที่กิน (kcal)</label>
+                    <input type="number" id="calIn" value="0">
+                </div>
+                <div class="form-group">
+                    <label>แคลอรี่ที่เผาผลาญ (kcal)</label>
+                    <input type="number" id="calOut" value="0">
+                </div>
+                <button type="submit" style="background-color: #28a745; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">บันทึกข้อมูลรายวัน</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>พัฒนาการน้ำหนัก</h2>
+            <canvas id="weightChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // ดึงชื่อมาแสดง
+        document.getElementById('usernameDisplay').innerText = localStorage.getItem('username') || 'ผู้ใช้งาน';
+
+        // ตั้งค่าวันที่ปัจจุบัน
+        const logDateInput = document.getElementById('logDate');
+        if (logDateInput) logDateInput.valueAsDate = new Date();
+
+        async function loadChart() {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+
+    try {
+        // 1. ดึงข้อมูล Log และข้อมูล User ไปพร้อมกัน
+        const [logRes, userRes] = await Promise.all([
+            fetch(`http://localhost:5000/api/logs/${userId}`),
+            fetch(`http://localhost:5000/api/user/${userId}`)
+        ]);
+
+        const logs = await logRes.json();
+        const userData = await userRes.json();
+
+        // เพิ่มบรรทัดนี้ใน loadChart หลังจากที่ได้ logs และ userData มาแล้ว
+        if (logs.length > 0) {
+        calculateBMI(logs[0].weight, userData.height);
+        }
+        
+        if (logs.length === 0) return;
+
+        const sortedLogs = logs.reverse();
+        const targetWeight = userData.target_weight; // นี่คือค่าน้ำหนักเป้าหมายจาก DB
+
+        const ctx = document.getElementById('weightChart').getContext('2d');
+        
+        // ลบกราฟเก่าออกก่อนถ้ามีการโหลดใหม่
+        if (window.myChart) window.myChart.destroy();
+
+        window.myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: sortedLogs.map(log => new Date(log.log_date).toLocaleDateString()),
+                datasets: [
+                    {
+                        label: 'น้ำหนักจริง (kg)',
+                        data: sortedLogs.map(log => log.weight),
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        fill: false,
+                        tension: 0.2
+                    },
+                    {
+                        label: 'เป้าหมาย (Target)',
+                        // สร้าง Array ที่มีค่าเท่ากับน้ำหนักเป้าหมายทุกจุด
+                        data: Array(sortedLogs.length).fill(targetWeight),
+                        borderColor: '#ff4d4d',
+                        borderDash: [5, 5], // ทำให้เป็นเส้นประ
+                        pointRadius: 0,     // ไม่แสดงจุดบนเส้นเป้าหมาย
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `เป้าหมายของคุณคือ ${targetWeight} kg`
+                    }
+                }
+            }
+        });
+    } catch (e) {
+        console.error("Error loading chart data:", e);
+    }
+    function calculateBMI(weight, heightCm) {
+    if (!weight || !heightCm) return;
+    
+    const heightM = heightCm / 100; // แปลงเซนติเมตรเป็นเมตร
+    const bmi = (weight / (heightM * heightM)).toFixed(2);
+    
+    const bmiValueEl = document.getElementById('bmiValue');
+    const bmiStatusEl = document.getElementById('bmiStatus');
+    const bmiIndicator = document.getElementById('bmiIndicator');
+    
+    bmiValueEl.innerText = bmi;
+
+    // แบ่งเกณฑ์ BMI
+    if (bmi < 18.5) {
+        bmiStatusEl.innerText = "น้ำหนักน้อย / ผอม";
+        bmiStatusEl.style.color = "#17a2b8"; // สีฟ้า
+        bmiIndicator.style.background = "#17a2b8";
+    } else if (bmi >= 18.5 && bmi < 23) {
+        bmiStatusEl.innerText = "ปกติ / สุขภาพดี";
+        bmiStatusEl.style.color = "#28a745"; // สีเขียว
+        bmiIndicator.style.background = "#28a745";
+    } else if (bmi >= 23 && bmi < 25) {
+        bmiStatusEl.innerText = "น้ำหนักเกิน";
+        bmiStatusEl.style.color = "#ffc107"; // สีเหลือง
+        bmiIndicator.style.background = "#ffc107";
+    } else if (bmi >= 25 && bmi < 30) {
+        bmiStatusEl.innerText = "อ้วน / โรคอ้วนระดับ 1";
+        bmiStatusEl.style.color = "#fd7e14"; // สีส้ม
+        bmiIndicator.style.background = "#fd7e14";
+    } else {
+        bmiStatusEl.innerText = "อ้วนอันตราย / โรคอ้วนระดับ 2";
+        bmiStatusEl.style.color = "#dc3545"; // สีแดง
+        bmiIndicator.style.background = "#dc3545";
+    }
+}
+}
+
+        document.getElementById('dailyLogForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = localStorage.getItem('userId');
+            const payload = {
+                user_id: userId,
+                log_date: document.getElementById('logDate').value,
+                weight: parseFloat(document.getElementById('weight').value),
+                calories_in: parseInt(document.getElementById('calIn').value),
+                calories_out: parseInt(document.getElementById('calOut').value)
+            };
+
+            const response = await fetch('http://localhost:5000/api/logs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                alert('บันทึกสำเร็จ!');
+                location.reload();
+            }
+        });
+
+        loadChart();
+    </script>
+</body>
+</html>

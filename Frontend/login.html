@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ - Health Tracker</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #e9ecef; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-container { background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { text-align: center; color: #333; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; color: #666; }
+        input { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 0.75rem; background-color: #28a745; border: none; border-radius: 6px; color: white; font-size: 1rem; cursor: pointer; transition: background 0.3s; }
+        button:hover { background-color: #218838; }
+        .error-msg { color: #dc3545; text-align: center; margin-top: 1rem; display: none; }
+        .register-link { text-align: center; margin-top: 1.5rem; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>Health Tracker Login</h2>
+    <form id="loginForm">
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="username" placeholder="กรอกชื่อผู้ใช้" required>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="กรอกรหัสผ่าน" required>
+        </div>
+        <button type="submit">เข้าสู่ระบบ</button>
+    </form>
+    <div id="errorMsg" class="error-msg">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
+    <div class="register-link">
+        ยังไม่มีบัญชี? <a href="register.html">สมัครสมาชิกที่นี่</a>
+    </div>
+</div>
+
+<script>
+    const loginForm = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            // ยิงไปที่ Backend API ที่เราทำไว้
+            const response = await fetch('http://localhost:5000/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // เก็บข้อมูลผู้ใช้ไว้ในเครื่อง
+                localStorage.setItem('userId', data.user.id);
+                localStorage.setItem('username', data.user.username);
+                
+                alert('Login สำเร็จ! กำลังพาไปหน้า Dashboard');
+                window.location.href = 'index.html'; // ส่งไปหน้า Dashboard
+            } else {
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = data.message;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('ไม่สามารถเชื่อมต่อกับ Server ได้');
+        }
+    });
+</script>
+
+</body>
+</html>

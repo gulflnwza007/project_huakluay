@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: health_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: health_tracker
+      MYSQL_USER: senior_user
+      MYSQL_PASSWORD: password123
+    ports:
+      - "3307:3306" 
+    volumes:
+      - db_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: health_pma
+    restart: always
+    ports:
+      - "8081:80" 
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root_password
+    depends_on:
+      - db
+
+volumes:
+  db_data:
