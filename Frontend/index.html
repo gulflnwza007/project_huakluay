@@ -1,190 +1,309 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Health Tracker Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Debugger - IT Professional Health System</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .form-group { margin-bottom: 10px; }
+        :root { --primary: #2c3e50; --secondary: #27ae60; --danger: #e74c3c; --light: #f8f9fa; --blue: #2980b9; --purple: #6c5ce7; }
+        body { font-family: 'Sarabun', 'Segoe UI', sans-serif; background: #e9ecef; margin: 0; padding: 20px; color: #2d3436; }
+        .container { max-width: 1200px; margin: auto; }
+        .header { background: var(--primary); color: white; padding: 25px; border-radius: 15px; text-align: center; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; color: var(--primary); font-size: 1.4rem; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; font-size: 0.95rem; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box; font-size: 1rem; transition: border-color 0.2s; }
+        input:focus { border-color: var(--blue); outline: none; }
+        button { cursor: pointer; padding: 14px; border: none; border-radius: 8px; font-weight: bold; transition: 0.3s; width: 100%; font-size: 1rem; }
+        .btn-save { background: var(--secondary); color: white; }
+        .btn-save:hover { background: #219150; }
+        .btn-test { background: var(--purple); color: white; margin-top: 15px; }
+        
+        .water-status { background: #f0f7ff; padding: 20px; border-radius: 10px; border-left: 5px solid var(--blue); margin-top: 15px; text-align: center; }
+        .water-needed { color: var(--danger); font-weight: 700; font-size: 1.3rem; }
+        
+        .mental-scroll { max-height: 350px; overflow-y: auto; padding: 15px; border: 1px solid #dee2e6; border-radius: 10px; background: #fdfdfd; }
+        #mentalStatusBox { padding: 18px; border-radius: 10px; font-weight: bold; margin-top: 20px; text-align: center; display: none; font-size: 1.1rem; }
+        
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <h1>ยินดีต้อนรับคุณ <span id="usernameDisplay">...</span></h1>
-    <div class="card" style="display: flex; align-items: center; justify-content: space-between;">
-    <div>
-        <h3 style="margin: 0;">ดัชนีมวลกาย (BMI) ของคุณ: <span id="bmiValue">--</span></h3>
-        <p id="bmiStatus" style="margin: 5px 0 0 0; font-weight: bold;"></p>
+
+<div class="container">
+    <div class="header">
+        <h1>🏥 IT Body Patch v1.0</h1>
+        <div>
+            ผู้ใช้งาน: <span id="usernameDisplay">...</span> | 
+            <button onclick="logout()" style="width: auto; padding: 8px 20px; background: var(--danger); color: white;">ออกจากระบบ</button>
+        </div>
     </div>
-    <div id="bmiIndicator" style="width: 50px; height: 50px; border-radius: 50%; background: #ccc;"></div>
-</div>
+
     <div class="grid">
         <div class="card">
-            <h2>บันทึกสุขภาพวันนี้</h2>
-            <form id="dailyLogForm">
-                <div class="form-group">
-                    <label>วันที่บันทึก</label>
-                    <input type="date" id="logDate" required>
+            <h2>📝 บันทึกข้อมูลสุขภาพและกิจกรรม</h2>
+            <form id="healthForm">
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group"><label>วันที่บันทึก</label><input type="date" id="logDate" required></div>
+                    <div class="form-group"><label>น้ำหนักตัว (กก.)</label><input type="number" step="0.1" id="weight" oninput="calculateWaterGoal()" required></div>
                 </div>
-                <div class="form-group">
-                    <label>น้ำหนัก (kg)</label>
-                    <input type="number" step="0.1" id="weight" required>
+
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #e9ecef;">
+                    <label>🏃 กิจกรรมการออกกำลังกาย</label>
+                    <div class="grid" style="grid-template-columns: 1.5fr 1fr; gap: 10px;">
+                        <select id="exType" onchange="checkIfNoExercise()">
+                            <option value="none">ยังไม่ได้ออกกำลังกาย</option>
+                            <option value="200">เดินเร็ว (Low Intensity)</option>
+                            <option value="500">วิ่ง/ว่ายน้ำ (High Intensity)</option>
+                            <option value="400">ปั่นจักรยาน (Moderate Intensity)</option>
+                            <option value="300">เวทเทรนนิ่ง (Strength Training)</option>
+                        </select>
+                        <input type="number" id="exDuration" placeholder="เวลา (นาที)" oninput="calcExCal()">
+                    </div>
+                    <div id="adviceTrigger" style="display: block; margin-top: 10px;">
+                        <button type="button" onclick="generateExerciseAdvice()" style="background: #e67e22; color: white; padding: 8px; font-size: 0.85rem; height: auto;">
+                            💡 ขอคำแนะนำการออกกำลังกายที่เหมาะสม
+                        </button>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>แคลอรี่ที่กิน (kcal)</label>
-                    <input type="number" id="calIn" value="0">
+
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group"><label>พลังงานที่ได้รับ (kcal)</label><input type="number" id="calIn" required></div>
+                    <div class="form-group"><label>พลังงานที่ใช้ไป (kcal)</label><input type="number" id="calOut" required></div>
                 </div>
+
                 <div class="form-group">
-                    <label>แคลอรี่ที่เผาผลาญ (kcal)</label>
-                    <input type="number" id="calOut" value="0">
+                    <label>💧 ปริมาณการดื่มน้ำ (แก้วมาตรฐาน 250 มล.)</label>
+                    <input type="number" id="water" value="0" oninput="calculateWaterGoal()">
                 </div>
-                <button type="submit" style="background-color: #28a745; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">บันทึกข้อมูลรายวัน</button>
+
+                <div id="waterReminder" class="water-status">
+                    ระบบรอการป้อนข้อมูลน้ำหนักเพื่อคำนวณปริมาณน้ำที่เหมาะสม
+                </div>
+
+                <button type="submit" class="btn-save" style="margin-top:20px;">💾 บันทึกข้อมูลภาพรวมรายวัน</button>
             </form>
+            
+            <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+            <h2>📈 สถิติแนวโน้มน้ำหนักตัว</h2>
+            <canvas id="weightChart"></canvas>
         </div>
 
         <div class="card">
-            <h2>พัฒนาการน้ำหนัก</h2>
-            <canvas id="weightChart"></canvas>
+            <h2>🧠 แบบประเมินสุขภาพจิตเบื้องต้น (9Q)</h2>
+            <p style="font-size: 0.9rem; color: #6c757d; margin-bottom: 15px;">เกณฑ์การประเมินอาการในช่วงระยะเวลา 2 สัปดาห์ที่ผ่านมา</p>
+            
+            <div class="mental-scroll" id="qContainer"></div>
+            
+            <button onclick="checkMental()" class="btn-test">📊 ประมวลผลและแสดงกราฟวิเคราะห์</button>
+            <div id="mentalStatusBox"></div>
+            <div style="width: 280px; margin: 25px auto;"><canvas id="mentalChart"></canvas></div>
+            <div id="mentalAdvice" style="text-align: center; font-size: 1rem; color: #495057; line-height: 1.5;"></div>
         </div>
     </div>
+</div>
 
-    <script>
-        // ดึงชื่อมาแสดง
-        document.getElementById('usernameDisplay').innerText = localStorage.getItem('username') || 'ผู้ใช้งาน';
-
-        // ตั้งค่าวันที่ปัจจุบัน
-        const logDateInput = document.getElementById('logDate');
-        if (logDateInput) logDateInput.valueAsDate = new Date();
-
-        async function loadChart() {
+<script>
     const userId = localStorage.getItem('userId');
-    if (!userId) return;
+    if (!userId) window.location.href = 'login.html';
 
-    try {
-        // 1. ดึงข้อมูล Log และข้อมูล User ไปพร้อมกัน
-        const [logRes, userRes] = await Promise.all([
-            fetch(`http://localhost:5000/api/logs/${userId}`),
-            fetch(`http://localhost:5000/api/user/${userId}`)
-        ]);
+    let mentalPieChart, weightLineChart;
 
-        const logs = await logRes.json();
-        const userData = await userRes.json();
+    // --- 1. ระบบคำนวณน้ำ ---
+    function calculateWaterGoal() {
+        const weight = parseFloat(document.getElementById('weight').value);
+        const waterDrank = parseInt(document.getElementById('water').value) || 0;
+        const reminderDiv = document.getElementById('waterReminder');
 
-        // เพิ่มบรรทัดนี้ใน loadChart หลังจากที่ได้ logs และ userData มาแล้ว
-        if (logs.length > 0) {
-        calculateBMI(logs[0].weight, userData.height);
+        if (!weight) return;
+
+        const totalGoalML = weight * 33;
+        const totalGoalGlasses = Math.ceil(totalGoalML / 250);
+        const remaining = totalGoalGlasses - waterDrank;
+
+        if (remaining > 0) {
+            reminderDiv.innerHTML = `เป้าหมายรายวัน: <b>${totalGoalGlasses} แก้ว</b> | ปริมาณที่ต้องดื่มเพิ่ม: <span class="water-needed">${remaining} แก้ว</span>`;
+            reminderDiv.style.borderColor = "var(--blue)";
+        } else {
+            reminderDiv.innerHTML = `✅ <b>บรรลุเป้าหมาย:</b> ปริมาณการดื่มน้ำเพียงพอต่อความต้องการของร่างกาย`;
+            reminderDiv.style.borderColor = "var(--secondary)";
         }
+    }
+
+    // --- 2. ระบบจัดการการออกกำลังกาย ---
+    function checkIfNoExercise() {
+        const exType = document.getElementById('exType').value;
+        const adviceTrigger = document.getElementById('adviceTrigger');
+        // แสดงปุ่มแนะนำเฉพาะเมื่อเลือก "ยังไม่ได้ออกกำลังกาย"
+        adviceTrigger.style.display = (exType === "none") ? "block" : "none";
+        if (exType !== "none") calcExCal();
+    }
+
+    function calcExCal() {
+        const rate = parseInt(document.getElementById('exType').value) || 0;
+        const mins = parseInt(document.getElementById('exDuration').value) || 0;
+        const burned = Math.round((rate / 60) * mins);
+        // 1600 คือค่าการเผาผลาญพื้นฐาน (BMR) โดยประมาณ
+        document.getElementById('calOut').value = 1600 + burned; 
+    }
+
+   function generateExerciseAdvice() {
+        const weight = parseFloat(document.getElementById('weight').value);
+        const calIn = parseInt(document.getElementById('calIn').value) || 0;
         
-        if (logs.length === 0) return;
+        if (!weight || !calIn) {
+            alert("กรุณาระบุน้ำหนักและปริมาณแคลอรี่ที่รับประทาน เพื่อให้ระบบประมวลผลคำแนะนำ");
+            return;
+        }
 
-        const sortedLogs = logs.reverse();
-        const targetWeight = userData.target_weight; // นี่คือค่าน้ำหนักเป้าหมายจาก DB
+        // 1600 คือค่า BMR พื้นฐานโดยประมาณ
+        const netCal = calIn - 1600; 
+        let message = "";
 
-        const ctx = document.getElementById('weightChart').getContext('2d');
-        
-        // ลบกราฟเก่าออกก่อนถ้ามีการโหลดใหม่
-        if (window.myChart) window.myChart.destroy();
+        // กรณีที่ทานมาไม่เกินค่าพื้นฐาน
+        if (netCal <= 0) {
+            message = `สถานะ: พลังงานสมดุลแล้ว\nคำแนะนำ: วันนี้คุณรับประทานอาหารในปริมาณที่เหมาะสมกับร่างกาย ควรเน้นการ "พักผ่อน" หรือยืดเหยียดร่างกายเบาๆ เพื่อฟื้นฟูกล้ามเนื้อครับ`;
+        } 
+        // กรณีมีพลังงานส่วนเกิน
+        else {
+            let activity = "";
+            let duration = 0;
+            let burnRate = 0;
 
-        window.myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: sortedLogs.map(log => new Date(log.log_date).toLocaleDateString()),
-                datasets: [
-                    {
-                        label: 'น้ำหนักจริง (kg)',
-                        data: sortedLogs.map(log => log.weight),
-                        borderColor: '#28a745',
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                        fill: false,
-                        tension: 0.2
-                    },
-                    {
-                        label: 'เป้าหมาย (Target)',
-                        // สร้าง Array ที่มีค่าเท่ากับน้ำหนักเป้าหมายทุกจุด
-                        data: Array(sortedLogs.length).fill(targetWeight),
-                        borderColor: '#ff4d4d',
-                        borderDash: [5, 5], // ทำให้เป็นเส้นประ
-                        pointRadius: 0,     // ไม่แสดงจุดบนเส้นเป้าหมาย
-                        fill: false
-                    }
-                ]
+            if (weight > 85) {
+                // สำหรับคนน้ำหนักเยอะ เน้นกิจกรรมแรงกระแทกต่ำ
+                activity = "เดินเร็ว";
+                burnRate = 5; // ประมาณ 5 kcal ต่อนาที
+                duration = Math.ceil(netCal / burnRate);
+                message = `สถานะ: มีพลังงานส่วนเกิน ${netCal} kcal\nคำแนะนำ: เนื่องจากคุณมีน้ำหนักตัวเกินเกณฑ์ เพื่อความปลอดภัยของข้อต่อ\n\n👉 ควรออกกำลังกายด้วยการ: "${activity}" เป็นเวลา ${duration} นาที`;
+            } else {
+                // สำหรับคนน้ำหนักปกติ เน้น Cardio เข้มข้น
+                activity = "วิ่งจ็อกกิ้ง";
+                burnRate = 8; // ประมาณ 8 kcal ต่อนาที
+                duration = Math.ceil(netCal / burnRate);
+                message = `สถานะ: มีพลังงานส่วนเกิน ${netCal} kcal\nคำแนะนำ: คุณสามารถออกกำลังกายเพื่อเผาผลาญพลังงานส่วนเกินได้อย่างเต็มที่\n\n👉 ควรออกกำลังกายด้วยการ: "${activity}" เป็นเวลา ${duration} นาที`;
+            }
+        }
+
+        alert(`[ ระบบวิเคราะห์สุขภาพดิจิทัล ]\n\n${message}`);
+    }
+    // --- 3. ระบบสุขภาพจิต (9Q) ---
+    const questions = [
+        "1. เบื่อ ไม่สนใจอยากทำกิจกรรมต่างๆ", "2. ไม่สบายใจ ซึมเศร้า หรือท้อแท้",
+        "3. หลับยาก หรือหลับมากเกินไป", "4. เหนื่อยง่าย หรือไม่ค่อยมีแรง",
+        "5. เบื่ออาหาร หรือรับประทานมากเกินไป", "6. รู้สึกไม่ดีกับตนเอง หรือตำหนิตนเอง",
+        "7. สมาธิในการทำกิจกรรมต่างๆ ลดลง", "8. พูดหรือทำอะไรช้าลงจนผู้อื่นสังเกตเห็น",
+        "9. มีความคิดทำร้ายตนเอง หรือคิดว่าเสียชีวิตไปจะดีกว่า"
+    ];
+    const qContainer = document.getElementById('qContainer');
+    questions.forEach(q => {
+        qContainer.innerHTML += `
+            <div class="form-group">
+                <label>${q}</label>
+                <select class="q-score">
+                    <option value="0">ไม่มีอาการ</option>
+                    <option value="1">มีอาการบางวัน</option>
+                    <option value="2">มีอาการบ่อย (เกิน 1 สัปดาห์)</option>
+                    <option value="3">มีอาการทุกวัน</option>
+                </select>
+            </div>`;
+    });
+
+    function checkMental() {
+        let total = 0;
+        document.querySelectorAll('.q-score').forEach(s => total += parseInt(s.value));
+        const statusBox = document.getElementById('mentalStatusBox');
+        statusBox.style.display = 'block';
+
+        let res = total <= 6 ? ["ระดับปกติ", "#27ae60", "อยู่ในเกณฑ์ปกติ ไม่พบอาการของโรคซึมเศร้า"] :
+                  total <= 12 ? ["ระดับน้อย", "#f1c40f", "มีอาการระดับน้อย ควรสังเกตอาการและพักผ่อนอย่างเพียงพอ"] :
+                  total <= 18 ? ["ระดับปานกลาง", "#e67e22", "มีอาการระดับปานกลาง แนะนำให้ปรึกษาผู้ที่ไว้วางใจหรือนักจิตวิทยา"] :
+                                ["ระดับรุนแรง", "#e74c3c", "มีอาการระดับรุนแรง แนะนำให้ปรึกษาจิตแพทย์เพื่อรับการตรวจวินิจฉัย"];
+
+        statusBox.innerText = `ผลการวิเคราะห์: ${res[0]} (${total} คะแนน)`;
+        statusBox.style.backgroundColor = res[1];
+        statusBox.style.color = (total > 6 && total <= 12) ? "#000" : "#fff";
+        document.getElementById('mentalAdvice').innerText = res[2];
+
+        const ctx = document.getElementById('mentalChart').getContext('2d');
+        if (mentalPieChart) mentalPieChart.destroy();
+        mentalPieChart = new Chart(ctx, {
+            type: 'pie',
+            data: { 
+                labels: ['คะแนนที่ได้', 'เกณฑ์ที่เหลือ'], 
+                datasets: [{ data: [total, 27-total], backgroundColor: [res[1], '#f1f2f6'], borderWidth: 0 }] 
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: `เป้าหมายของคุณคือ ${targetWeight} kg`
-                    }
-                }
+            options: { 
+                animation: { duration: 1800, animateRotate: true, animateScale: true },
+                plugins: { legend: { position: 'bottom' } }
             }
         });
-    } catch (e) {
-        console.error("Error loading chart data:", e);
     }
-    function calculateBMI(weight, heightCm) {
-    if (!weight || !heightCm) return;
-    
-    const heightM = heightCm / 100; // แปลงเซนติเมตรเป็นเมตร
-    const bmi = (weight / (heightM * heightM)).toFixed(2);
-    
-    const bmiValueEl = document.getElementById('bmiValue');
-    const bmiStatusEl = document.getElementById('bmiStatus');
-    const bmiIndicator = document.getElementById('bmiIndicator');
-    
-    bmiValueEl.innerText = bmi;
 
-    // แบ่งเกณฑ์ BMI
-    if (bmi < 18.5) {
-        bmiStatusEl.innerText = "น้ำหนักน้อย / ผอม";
-        bmiStatusEl.style.color = "#17a2b8"; // สีฟ้า
-        bmiIndicator.style.background = "#17a2b8";
-    } else if (bmi >= 18.5 && bmi < 23) {
-        bmiStatusEl.innerText = "ปกติ / สุขภาพดี";
-        bmiStatusEl.style.color = "#28a745"; // สีเขียว
-        bmiIndicator.style.background = "#28a745";
-    } else if (bmi >= 23 && bmi < 25) {
-        bmiStatusEl.innerText = "น้ำหนักเกิน";
-        bmiStatusEl.style.color = "#ffc107"; // สีเหลือง
-        bmiIndicator.style.background = "#ffc107";
-    } else if (bmi >= 25 && bmi < 30) {
-        bmiStatusEl.innerText = "อ้วน / โรคอ้วนระดับ 1";
-        bmiStatusEl.style.color = "#fd7e14"; // สีส้ม
-        bmiIndicator.style.background = "#fd7e14";
-    } else {
-        bmiStatusEl.innerText = "อ้วนอันตราย / โรคอ้วนระดับ 2";
-        bmiStatusEl.style.color = "#dc3545"; // สีแดง
-        bmiIndicator.style.background = "#dc3545";
-    }
-}
-}
-
-        document.getElementById('dailyLogForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const userId = localStorage.getItem('userId');
-            const payload = {
-                user_id: userId,
-                log_date: document.getElementById('logDate').value,
-                weight: parseFloat(document.getElementById('weight').value),
-                calories_in: parseInt(document.getElementById('calIn').value),
-                calories_out: parseInt(document.getElementById('calOut').value)
-            };
-
-            const response = await fetch('http://localhost:5000/api/logs', {
+    // --- 4. การจัดการข้อมูลและการเชื่อมต่อ API ---
+    document.getElementById('healthForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+            user_id: userId,
+            log_date: document.getElementById('logDate').value,
+            weight: parseFloat(document.getElementById('weight').value),
+            calories_in: parseInt(document.getElementById('calIn').value),
+            calories_out: parseInt(document.getElementById('calOut').value),
+            water_glass: parseInt(document.getElementById('water').value)
+        };
+        try {
+            const res = await fetch('http://localhost:5000/api/logs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
+            if (res.ok) {
+                alert("บันทึกข้อมูลสำเร็จ");
+                loadData();
+            }
+        } catch (err) { console.error("บันทึกผิดพลาด:", err); }
+    });
 
-            if (response.ok) {
-                alert('บันทึกสำเร็จ!');
-                location.reload();
+    async function loadData() {
+        try {
+            const userRes = await fetch(`http://localhost:5000/api/user/${userId}`);
+            const user = await userRes.json();
+            document.getElementById('usernameDisplay').innerText = user.username;
+
+            const logsRes = await fetch(`http://localhost:5000/api/logs/${userId}`);
+            const logs = await logsRes.json();
+            if (logs.length > 0) renderWeightChart(logs);
+        } catch (err) { console.error("โหลดข้อมูลผิดพลาด:", err); }
+    }
+
+    function renderWeightChart(logs) {
+        const ctx = document.getElementById('weightChart').getContext('2d');
+        const data = [...logs].reverse();
+        if (weightLineChart) weightLineChart.destroy();
+        weightLineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(l => new Date(l.log_date).toLocaleDateString('th-TH')),
+                datasets: [{ 
+                    label: 'น้ำหนักตัว (กก.)', 
+                    data: data.map(l => l.weight), 
+                    borderColor: '#2980b9', 
+                    backgroundColor: 'rgba(41, 128, 185, 0.1)',
+                    fill: true,
+                    tension: 0.3 
+                }]
             }
         });
+    }
 
-        loadChart();
-    </script>
+    function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+    window.onload = () => { 
+        document.getElementById('logDate').valueAsDate = new Date(); 
+        loadData(); 
+    };
+</script>
 </body>
 </html>
