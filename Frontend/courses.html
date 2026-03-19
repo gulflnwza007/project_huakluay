@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>คอร์สออกกำลังกาย — IT Body Patch</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0c0501; --surface:rgba(22,8,3,0.92); --surface2:rgba(35,12,5,0.88);
+      --border:rgba(255,80,20,0.2); --border-bright:rgba(255,110,40,0.45);
+      --primary:#ff4500; --primary-b:#ff6a00; --primary-dim:rgba(255,69,0,0.14); --primary-glow:rgba(255,69,0,0.38);
+      --accent:#ff8c00; --gold:#fbbf24; --success:#22c55e; --danger:#f87171; --purple:#c084fc;
+      --text:#fff5ef; --text-muted:rgba(255,215,190,0.68); --text-dim:rgba(255,200,175,0.38);
+      --radius:14px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'IBM Plex Sans Thai','Barlow',sans-serif;background:radial-gradient(ellipse 65% 45% at 10% 6%,rgba(255,69,0,0.17) 0%,transparent 62%),radial-gradient(ellipse 45% 55% at 90% 85%,rgba(255,140,0,0.1) 0%,transparent 57%),var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+    /* TOPBAR */
+    .topbar{position:sticky;top:0;z-index:200;background:rgba(8,3,1,0.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 24px rgba(255,69,0,0.1);}
+    .topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,80,0,0.5),transparent);}
+    .topbar-left{display:flex;align-items:center;gap:10px;}
+    .app-logo{font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;font-weight:900;color:#fff;text-decoration:none;margin-right:6px;white-space:nowrap;text-shadow:0 0 20px rgba(255,100,0,0.4);}
+    .nav-pill{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:8px;font-family:'Barlow',sans-serif;font-weight:700;font-size:0.85rem;text-decoration:none;transition:all 0.2s;white-space:nowrap;border:1px solid transparent;}
+    .nav-pill.home{color:var(--text-muted);border-color:var(--border);background:var(--surface2);}
+    .nav-pill.home:hover{color:var(--primary-b);border-color:var(--border-bright);background:var(--primary-dim);}
+    .nav-pill.ex{background:rgba(255,69,0,0.12);color:var(--accent);border-color:rgba(255,140,0,0.3);}
+    .nav-pill.ex:hover{background:linear-gradient(135deg,#ff4500,#ff8c00);color:#fff;border-color:transparent;}
+    .nav-pill.mental{background:rgba(167,60,255,0.1);color:#c084fc;border-color:rgba(167,60,255,0.25);}
+    .nav-pill.mental:hover{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border-color:transparent;}
+    .topbar-right{display:flex;align-items:center;gap:14px;}
+    .user-chip{display:flex;align-items:center;gap:7px;font-size:0.86rem;color:var(--text-muted);white-space:nowrap;}
+    .pulse-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,0.8);animation:dotPulse 2s infinite;}
+    @keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.5)}}
+    .user-name{color:#fff;font-weight:700;font-size:0.92rem;}
+    .btn-logout{padding:6px 15px;background:rgba(255,30,30,0.1);border:1px solid rgba(255,30,30,0.28);color:#ff7a7a;border-radius:7px;cursor:pointer;font-size:0.82rem;font-weight:700;font-family:inherit;transition:all 0.2s;}
+    .btn-logout:hover{background:linear-gradient(135deg,#ff1f1f,#ff4500);color:#fff;border-color:transparent;}
+    /* LAYOUT */
+    .page{max-width:1100px;margin:0 auto;padding:32px 24px;position:relative;z-index:1;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+    .section-head{margin-bottom:22px;animation:fadeUp 0.4s ease both;}
+    .section-title{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:900;letter-spacing:0.5px;color:#fff;display:flex;align-items:center;gap:10px;}
+    .section-title .pill{background:var(--primary-dim);border:1px solid var(--border-bright);color:var(--accent);font-size:0.7rem;padding:3px 9px;border-radius:20px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
+    /* PLAN CARDS */
+    .plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:36px;}
+    @media(max-width:860px){.plans-grid{grid-template-columns:1fr;}}
+    .plan-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:30px 26px;position:relative;overflow:hidden;transition:all 0.3s;cursor:pointer;animation:fadeUp 0.45s ease both;}
+    .plan-card:hover{transform:translateY(-7px);border-color:var(--border-bright);box-shadow:0 24px 55px rgba(0,0,0,0.55);}
+    .ribbon{display:none;position:absolute;top:18px;right:-30px;background:linear-gradient(135deg,#ff4500,#ff8c00);color:#fff;font-size:0.68rem;font-weight:800;padding:4px 38px;transform:rotate(38deg);letter-spacing:0.5px;font-family:'Barlow',sans-serif;white-space:nowrap;}
+    .plan-card.popular .ribbon{display:block;}
+    .plan-bar{height:3px;position:absolute;top:0;left:0;right:0;border-radius:20px 20px 0 0;}
+    .bar-red{background:linear-gradient(90deg,#ff4500,#ff6a00);}
+    .bar-orange{background:linear-gradient(90deg,#ff8c00,#fbbf24);}
+    .bar-purple{background:linear-gradient(90deg,#9333ea,#c084fc);}
+    .plan-icon{font-size:2.6rem;margin-bottom:14px;display:block;}
+    .plan-name{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:900;color:#fff;margin-bottom:3px;}
+    .plan-sub{font-size:0.82rem;color:var(--text-dim);margin-bottom:18px;}
+    .plan-price{font-family:'Barlow Condensed',sans-serif;font-size:3rem;font-weight:900;line-height:1;margin-bottom:3px;}
+    .price-red{color:var(--primary-b);} .price-orange{color:var(--accent);} .price-purple{color:var(--purple);}
+    .plan-period{font-size:0.82rem;color:var(--text-dim);margin-bottom:8px;}
+    .plan-save{display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.28);color:#4ade80;font-size:0.74rem;font-weight:700;padding:4px 10px;border-radius:7px;margin-bottom:20px;}
+    .plan-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:26px;}
+    .plan-features li{display:flex;align-items:flex-start;gap:9px;font-size:0.9rem;color:var(--text-muted);line-height:1.45;}
+    .feat-check{color:var(--success);font-weight:800;font-size:0.92rem;flex-shrink:0;margin-top:1px;}
+    .btn-sub{width:100%;padding:13px;border:none;border-radius:12px;font-family:'Barlow','IBM Plex Sans Thai',sans-serif;font-size:0.98rem;font-weight:800;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;letter-spacing:0.3px;}
+    .btn-sub::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,transparent 60%);pointer-events:none;}
+    .btn-sub.red{background:linear-gradient(135deg,#ff4500,#ff6a00);color:#fff;box-shadow:0 4px 20px rgba(255,69,0,0.4);}
+    .btn-sub.orange{background:linear-gradient(135deg,#ff8c00,#fbbf24);color:#1a0800;box-shadow:0 4px 20px rgba(255,140,0,0.4);}
+    .btn-sub.purple{background:linear-gradient(135deg,#9333ea,#c084fc);color:#fff;box-shadow:0 4px 20px rgba(147,51,234,0.4);}
+    .btn-sub:hover{transform:translateY(-2px);filter:brightness(1.08);}
+    .btn-sub.is-active{background:rgba(34,197,94,0.15)!important;border:2px solid rgba(34,197,94,0.35)!important;color:#4ade80!important;box-shadow:none!important;cursor:default;transform:none!important;filter:none!important;}
+    /* MY PLAN */
+    .my-plan-wrap{background:var(--surface);border:1px solid var(--border-bright);border-radius:20px;padding:28px 28px 24px;position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,0.45);animation:fadeUp 0.5s 0.15s ease both;margin-bottom:22px;}
+    .my-plan-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ff4500,#ff8c00,#fbbf24);}
+    .my-plan-grid{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;}
+    @media(max-width:600px){.my-plan-grid{grid-template-columns:1fr;}}
+    .my-label{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;color:var(--text-dim);margin-bottom:7px;}
+    .my-name{font-family:'Barlow Condensed',sans-serif;font-size:2.1rem;font-weight:900;color:#fff;margin-bottom:5px;}
+    .my-exp{font-size:0.88rem;color:var(--text-muted);margin-bottom:16px;}
+    .days-track{background:rgba(255,69,0,0.1);border-radius:99px;height:7px;overflow:hidden;margin-top:7px;}
+    .days-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#ff4500,#ff8c00);transition:width 1s cubic-bezier(0.23,1,0.32,1);}
+    .days-row{display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-dim);margin-bottom:5px;}
+    .ring-svg{transform:rotate(-90deg);display:block;}
+    .ring-bg{fill:none;stroke:rgba(255,69,0,0.1);}
+    .ring-fill{fill:none;stroke:url(#rg);stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(0.23,1,0.32,1);}
+    .benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px;}
+    @media(max-width:600px){.benefits-grid{grid-template-columns:1fr;}}
+    .benefit{display:flex;align-items:center;gap:9px;font-size:0.86rem;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;}
+    .benefit-icon{font-size:1.25rem;flex-shrink:0;}
+    /* CARD / PAYMENT */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:0 8px 32px rgba(0,0,0,0.38);animation:fadeUp 0.45s 0.22s ease both;}
+    .card-title{font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+    .badge{background:var(--primary-dim);border:1px solid var(--border-bright);color:var(--accent);font-size:0.67rem;padding:2px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+    .pay-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid rgba(255,69,0,0.07);}
+    .pay-row:last-child{border-bottom:none;}
+    .pay-left{display:flex;align-items:center;gap:13px;}
+    .pay-ico{width:38px;height:38px;border-radius:10px;background:var(--primary-dim);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0;}
+    .pay-name{font-size:0.92rem;font-weight:700;color:var(--text);}
+    .pay-date{font-size:0.78rem;color:var(--text-dim);margin-top:2px;}
+    .pay-amt{font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;font-weight:900;color:var(--accent);}
+    .pay-status{font-size:0.72rem;font-weight:700;padding:3px 9px;border-radius:6px;margin-left:10px;}
+    .pay-status.ok{background:rgba(34,197,94,0.14);color:#4ade80;border:1px solid rgba(34,197,94,0.25);}
+    .pay-status.exp{background:rgba(248,113,113,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.22);}
+    /* MODAL */
+    .modal-bg{position:fixed;inset:0;background:rgba(5,2,1,0.85);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.25s;backdrop-filter:blur(6px);}
+    .modal-bg.open{opacity:1;pointer-events:all;}
+    .modal{background:#1a0804;border:1px solid var(--border-bright);border-radius:22px;padding:34px;max-width:470px;width:100%;position:relative;box-shadow:0 28px 65px rgba(0,0,0,0.75);animation:fadeUp 0.3s ease both;}
+    .modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#ff4500,#ff8c00);border-radius:22px 22px 0 0;}
+    .modal-close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:8px;background:rgba(255,69,0,0.1);border:1px solid rgba(255,69,0,0.2);color:var(--text-muted);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+    .modal-close:hover{background:rgba(255,69,0,0.22);color:#fff;}
+    .modal-plan-name{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:900;color:#fff;margin-bottom:4px;}
+    .modal-plan-desc{font-size:0.85rem;color:var(--text-muted);margin-bottom:18px;}
+    .modal-price-big{font-family:'Barlow Condensed',sans-serif;font-size:3.2rem;font-weight:900;color:var(--accent);line-height:1;}
+    .modal-period{font-size:0.8rem;color:var(--text-dim);margin-bottom:22px;}
+    .mfield{margin-bottom:14px;}
+    .mfield label{display:block;font-size:0.76rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+    .mfield input,.mfield select{width:100%;padding:11px 13px;background:rgba(15,6,2,0.85);border:1px solid rgba(255,69,0,0.22);border-radius:10px;color:var(--text);font-family:inherit;font-size:0.93rem;outline:none;transition:all 0.2s;}
+    .mfield input:focus,.mfield select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(255,69,0,0.13);}
+    .mfield select option{background:#1a0804;}
+    .mrow2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .btn-confirm{width:100%;padding:14px;margin-top:8px;background:linear-gradient(135deg,#ff4500,#ff8c00);color:#fff;border:none;border-radius:12px;font-family:'Barlow',inherit;font-size:1rem;font-weight:800;cursor:pointer;transition:all 0.25s;box-shadow:0 4px 22px rgba(255,69,0,0.42);position:relative;overflow:hidden;}
+    .btn-confirm::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,transparent 60%);pointer-events:none;}
+    .btn-confirm:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,100,30,0.55);}
+    /* TOAST */
+    .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(34,197,94,0.93);color:#fff;padding:12px 24px;border-radius:12px;font-size:0.92rem;font-weight:700;opacity:0;pointer-events:none;transition:all 0.3s;z-index:9999;box-shadow:0 8px 28px rgba(34,197,94,0.45);white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    .toast.err{background:rgba(248,113,113,0.93);box-shadow:0 8px 28px rgba(248,113,113,0.4);}
+    /* EMPTY STATE */
+    .empty-state{background:var(--surface);border:1px dashed rgba(255,80,20,0.25);border-radius:20px;padding:48px 28px;text-align:center;animation:fadeUp 0.5s 0.15s ease both;margin-bottom:22px;}
+    .empty-icon{font-size:3.2rem;margin-bottom:14px;opacity:0.7;}
+    .empty-title{font-family:'Barlow Condensed',sans-serif;font-size:1.35rem;font-weight:900;color:var(--text);margin-bottom:8px;}
+    .empty-desc{font-size:0.9rem;color:var(--text-dim);line-height:1.6;max-width:360px;margin:0 auto 22px;}
+    .empty-hint{display:inline-flex;align-items:center;gap:6px;background:var(--primary-dim);border:1px solid var(--border-bright);color:var(--accent);font-size:0.8rem;font-weight:700;padding:8px 16px;border-radius:20px;}
+    .empty-pay{background:var(--surface);border:1px dashed rgba(255,80,20,0.2);border-radius:var(--radius);padding:36px 28px;text-align:center;animation:fadeUp 0.45s 0.22s ease both;}
+    .empty-pay .ep-icon{font-size:2.4rem;margin-bottom:10px;opacity:0.5;}
+    .empty-pay .ep-text{font-size:0.9rem;color:var(--text-dim);}
+    /* PAY INFO BOX */
+    .pay-info-box{background:rgba(255,69,0,0.07);border:1px solid rgba(255,100,30,0.25);border-radius:12px;padding:18px 20px;text-align:center;margin-bottom:16px;}
+    .pay-info-label{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);margin-bottom:8px;}
+    .pay-info-bank{font-size:0.92rem;font-weight:700;color:var(--text-muted);margin-bottom:6px;}
+    .pay-info-acc{font-family:'Barlow Condensed',sans-serif;font-size:1.7rem;font-weight:900;color:var(--accent);letter-spacing:1px;}
+    .pay-info-name{font-size:0.8rem;color:var(--text-dim);margin-top:4px;}
+    /* FILE UPLOAD */
+    .file-drop{border:2px dashed rgba(255,100,30,0.35);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:rgba(255,69,0,0.04);position:relative;}
+    .file-drop:hover,.file-drop.drag{border-color:var(--primary);background:rgba(255,69,0,0.09);}
+    .file-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+    .file-drop-icon{font-size:1.8rem;margin-bottom:6px;}
+    .file-drop-text{font-size:0.85rem;color:var(--text-muted);font-weight:600;}
+    .file-drop-sub{font-size:0.73rem;color:var(--text-dim);margin-top:3px;}
+    .file-preview{display:none;align-items:center;gap:10px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.28);border-radius:10px;padding:10px 14px;margin-top:10px;}
+    .file-preview.show{display:flex;}
+    .file-preview-icon{font-size:1.4rem;flex-shrink:0;}
+    .file-preview-name{font-size:0.85rem;font-weight:700;color:#4ade80;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .file-preview-size{font-size:0.73rem;color:var(--text-dim);flex-shrink:0;}
+    .file-preview-rm{background:none;border:none;color:rgba(248,113,113,0.7);cursor:pointer;font-size:1rem;padding:0 2px;flex-shrink:0;transition:color 0.2s;}
+    .file-preview-rm:hover{color:#f87171;}
+  </style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-left">
+    <a href="index.html" class="app-logo">&#127973; IT Body Patch</a>
+    <a href="index.html"    class="nav-pill home">&#127968; หน้าหลัก</a>
+    <a href="exercise.html" class="nav-pill ex">&#127947; Exercise</a>
+    <a href="mental.html"   class="nav-pill mental">&#129504; Mental Health</a>
+  </div>
+  <div class="topbar-right">
+    <div class="user-chip">
+      <span class="pulse-dot"></span>
+      <span style="color:rgba(255,200,180,0.45);font-size:0.8rem;">ผู้ใช้งาน:</span>
+      <span id="usernameDisplay" class="user-name">สุริยา</span>
+    </div>
+    <button class="btn-logout" onclick="logout()">ออกจากระบบ</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- PLAN SELECTION -->
+  <div class="section-head">
+    <div class="section-title">&#128293; เลือกแพ็กเกจที่ใช่สำหรับคุณ <span class="pill">3 ระดับ</span></div>
+  </div>
+
+  <div class="plans-grid">
+    <!-- Monthly -->
+    <div class="plan-card" style="animation-delay:0.05s">
+      <div class="plan-bar bar-red"></div>
+      <span class="plan-icon">&#9889;</span>
+      <div class="plan-name">รายเดือน</div>
+      <div class="plan-sub">1 เดือน · ยืดหยุ่น ยกเลิกได้ทุกเวลา</div>
+      <div class="plan-price price-red">฿490</div>
+      <div class="plan-period">/ เดือน</div>
+      <ul class="plan-features">
+        <li><span class="feat-check">&#10003;</span>เข้าใช้คอร์สออกกำลังกายทั้งหมด</li>
+        <li><span class="feat-check">&#10003;</span>บันทึกและติดตามความก้าวหน้า</li>
+        <li><span class="feat-check">&#10003;</span>AI แนะนำโปรแกรมการออกกำลังกาย</li>
+        <li><span class="feat-check">&#10003;</span>ยกเลิกได้ทุกเวลา ไม่มีค่าปรับ</li>
+      </ul>
+      <button class="btn-sub red" id="btn-monthly" onclick="openModal('monthly')">&#128640; สมัครเลย</button>
+    </div>
+    <!-- Biannual -->
+    <div class="plan-card popular" style="animation-delay:0.1s">
+      <div class="plan-bar bar-orange"></div>
+      <div class="ribbon">&#11088; ยอดนิยม</div>
+      <span class="plan-icon">&#128293;</span>
+      <div class="plan-name">ราย 6 เดือน</div>
+      <div class="plan-sub">6 เดือน · ประหยัดกว่า 17%</div>
+      <div class="plan-price price-orange">฿2,450</div>
+      <div class="plan-period">/ 6 เดือน <span style="color:var(--text-dim)">(~฿408/เดือน)</span></div>
+      <div class="plan-save">&#127881; ประหยัด ฿490 เมื่อเทียบรายเดือน</div>
+      <ul class="plan-features">
+        <li><span class="feat-check">&#10003;</span>ทุกอย่างในแพ็กเกจรายเดือน</li>
+        <li><span class="feat-check">&#10003;</span>แผนโภชนาการส่วนตัว</li>
+        <li><span class="feat-check">&#10003;</span>รายงานสุขภาพรายสัปดาห์</li>
+        <li><span class="feat-check">&#10003;</span>Live Class 2 ครั้ง/เดือน</li>
+      </ul>
+      <button class="btn-sub orange" id="btn-biannual" onclick="openModal('biannual')">&#128640; สมัครเลย</button>
+    </div>
+    <!-- Annual -->
+    <div class="plan-card" style="animation-delay:0.15s">
+      <div class="plan-bar bar-purple"></div>
+      <span class="plan-icon">&#128081;</span>
+      <div class="plan-name">รายปี</div>
+      <div class="plan-sub">12 เดือน · คุ้มค่าที่สุด</div>
+      <div class="plan-price price-purple">฿3,990</div>
+      <div class="plan-period">/ ปี <span style="color:var(--text-dim)">(~฿332/เดือน)</span></div>
+      <div class="plan-save">&#127942; ประหยัด ฿1,890 เมื่อเทียบรายเดือน</div>
+      <ul class="plan-features">
+        <li><span class="feat-check">&#10003;</span>ทุกอย่างในแพ็กเกจ 6 เดือน</li>
+        <li><span class="feat-check">&#10003;</span>โค้ชส่วนตัว 1-on-1 (1 ครั้ง/ปี)</li>
+        <li><span class="feat-check">&#10003;</span>Live Class ไม่จำกัด</li>
+        <li><span class="feat-check">&#10003;</span>คอร์ส Premium พิเศษ</li>
+        <li><span class="feat-check">&#10003;</span>ใบรับรองความสำเร็จ</li>
+      </ul>
+      <button class="btn-sub purple" id="btn-annual" onclick="openModal('annual')">&#128640; สมัครเลย</button>
+    </div>
+  </div>
+
+  <!-- MY CURRENT PLAN -->
+  <div class="section-head" style="animation:fadeUp 0.4s 0.12s ease both">
+    <div class="section-title">&#128203; แพ็กเกจปัจจุบันของคุณ</div>
+  </div>
+
+  <!-- empty state (ยังไม่สมัคร) -->
+  <div class="empty-state" id="myPlanEmpty">
+    <div class="empty-icon">📦</div>
+    <div class="empty-title">ยังไม่มีแพ็กเกจที่ใช้งาน</div>
+    <div class="empty-desc">เลือกแพ็กเกจด้านบนเพื่อเริ่มต้นออกกำลังกาย<br>กับ IT Body Patch ได้เลย!</div>
+    <div class="empty-hint">&#128293; เลือกแพ็กเกจที่เหมาะกับคุณด้านบน</div>
+  </div>
+
+  <!-- filled state (สมัครแล้ว) -->
+  <div class="my-plan-wrap" id="myPlanSection" style="display:none">
+    <div class="my-plan-grid">
+      <div>
+        <div class="my-label">กำลังใช้งาน</div>
+        <div class="my-name" id="myPlanName">ราย 6 เดือน</div>
+        <div class="my-exp" id="myPlanExp">หมดอายุ: 20 ก.ย. 2026 · เหลืออีก <strong style="color:var(--accent)">184 วัน</strong></div>
+        <div style="margin-top:14px;">
+          <div class="days-row">
+            <span id="daysUsedLabel">ใช้ไป 3 เดือน</span>
+            <span id="pctLabel">50%</span>
+          </div>
+          <div class="days-track"><div class="days-fill" id="daysFill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div style="text-align:center">
+        <svg width="110" height="110" class="ring-svg">
+          <defs>
+            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#ff4500"/>
+              <stop offset="100%" stop-color="#ff8c00"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-bg" cx="55" cy="55" r="44" stroke-width="9"/>
+          <circle class="ring-fill" id="ringCircle" cx="55" cy="55" r="44" stroke-width="9"
+            stroke-dasharray="276.46" stroke-dashoffset="276.46"/>
+        </svg>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;color:var(--accent);margin-top:4px;" id="ringLabel">50% ใช้ไปแล้ว</div>
+      </div>
+    </div>
+    <div class="benefits-grid" id="benefitsGrid">
+      <div class="benefit"><span class="benefit-icon">&#127909;</span> Live Class 2 ครั้ง/เดือน</div>
+      <div class="benefit"><span class="benefit-icon">&#129367;</span> แผนโภชนาการส่วนตัว</div>
+      <div class="benefit"><span class="benefit-icon">&#128202;</span> รายงานสุขภาพรายสัปดาห์</div>
+      <div class="benefit"><span class="benefit-icon">&#129302;</span> AI แนะนำโปรแกรม</div>
+    </div>
+  </div>
+
+  <!-- PAYMENT HISTORY -->
+  <!-- empty pay state -->
+  <div class="empty-pay" id="payHistoryEmpty">
+    <div class="ep-icon">💳</div>
+    <div class="ep-text">ยังไม่มีประวัติการชำระเงิน</div>
+  </div>
+
+  <!-- filled pay state -->
+  <div class="card" id="payHistoryCard" style="display:none">
+    <div class="card-title">&#128179; ประวัติการชำระเงิน <span class="badge">ล่าสุด</span></div>
+  </div><!-- end payHistoryCard -->
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg" onclick="closeBg(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&#10005;</button>
+    <div class="modal-plan-name" id="mTitle">สมัคร ราย 6 เดือน</div>
+    <div class="modal-plan-desc" id="mDesc">ประหยัดกว่ารายเดือน 17%</div>
+    <div class="modal-price-big" id="mPrice">฿2,450</div>
+    <div class="modal-period"    id="mPeriod">/ 6 เดือน</div>
+    <div class="mfield">
+      <label>วิธีชำระเงิน</label>
+      <select id="payMethod" onchange="switchPayFields()">
+        <option value="card">💳 บัตรเครดิต / เดบิต</option>
+        <option value="bank">🏦 โอนธนาคาร</option>
+        <option value="promptpay">📱 PromptPay</option>
+      </select>
+    </div>
+
+    <!-- บัตรเครดิต -->
+    <div id="fieldsCard">
+      <div class="mfield">
+        <label>ชื่อบนบัตร</label>
+        <input type="text" id="cardName" placeholder="เช่น Suriya Khamdet">
+      </div>
+      <div class="mfield">
+        <label>หมายเลขบัตร</label>
+        <input type="text" id="cardNum" placeholder="0000 0000 0000 0000" maxlength="19" oninput="fmtCard(this)">
+      </div>
+      <div class="mrow2">
+        <div class="mfield"><label>วันหมดอายุ</label><input type="text" id="cardExp" placeholder="MM/YY" maxlength="5" oninput="fmtExp(this)"></div>
+        <div class="mfield"><label>CVV</label><input type="text" id="cardCvv" placeholder="•••" maxlength="3"></div>
+      </div>
+    </div>
+
+    <!-- โอนธนาคาร -->
+    <div id="fieldsBank" style="display:none">
+      <div class="pay-info-box">
+        <div class="pay-info-label">โอนเข้าบัญชี</div>
+        <div class="pay-info-bank">🏦 ธนาคารกสิกรไทย (KBank)</div>
+        <div class="pay-info-acc">123-4-56789-0</div>
+        <div class="pay-info-name">บริษัท ไอที บอดี้แพทช์ จำกัด</div>
+      </div>
+      <div class="mfield">
+        <label>ชื่อเจ้าของบัญชีที่โอน</label>
+        <input type="text" id="bankSenderName" placeholder="เช่น สุริยา คำเดช">
+      </div>
+      <div class="mfield">
+        <label>เลขบัญชีที่โอนจาก</label>
+        <input type="text" id="bankAccNum" placeholder="เช่น 123-4-56789-0" maxlength="20">
+      </div>
+      <div class="mfield">
+        <label>แนบหลักฐานการโอน</label>
+        <div class="file-drop" id="bankDropZone">
+          <input type="file" id="bankSlipFile" accept="image/*,.pdf" onchange="handleFile('bank', this)">
+          <div class="file-drop-icon">📎</div>
+          <div class="file-drop-text">คลิกหรือลากไฟล์มาวางที่นี่</div>
+          <div class="file-drop-sub">รองรับ JPG, PNG, PDF (ไม่เกิน 5MB)</div>
+        </div>
+        <div class="file-preview" id="bankFilePreview">
+          <span class="file-preview-icon">🖼️</span>
+          <span class="file-preview-name" id="bankFileName"></span>
+          <span class="file-preview-size" id="bankFileSize"></span>
+          <button class="file-preview-rm" onclick="removeFile('bank')" title="ลบไฟล์">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PromptPay -->
+    <div id="fieldsPromptPay" style="display:none">
+      <div class="pay-info-box">
+        <div class="pay-info-label">PromptPay ปลายทาง</div>
+        <div style="font-size:2.8rem;margin:10px 0 4px">📱</div>
+        <div class="pay-info-acc">098-765-4321</div>
+        <div class="pay-info-name">บริษัท ไอที บอดี้แพทช์ จำกัด</div>
+        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:6px;">สแกน QR หรือโอนผ่านเบอร์โทรด้านบน</div>
+      </div>
+      <div class="mfield">
+        <label>เบอร์โทร / เลขบัตรประชาชน ที่ใช้โอน</label>
+        <input type="text" id="ppSender" placeholder="เช่น 091-234-5678" maxlength="20">
+      </div>
+      <div class="mfield">
+        <label>ชื่อผู้โอน</label>
+        <input type="text" id="ppName" placeholder="เช่น สุริยา คำเดช">
+      </div>
+      <div class="mfield">
+        <label>แนบสลิปการโอน</label>
+        <div class="file-drop" id="ppDropZone">
+          <input type="file" id="ppSlipFile" accept="image/*,.pdf" onchange="handleFile('pp', this)">
+          <div class="file-drop-icon">📎</div>
+          <div class="file-drop-text">คลิกหรือลากไฟล์มาวางที่นี่</div>
+          <div class="file-drop-sub">รองรับ JPG, PNG, PDF (ไม่เกิน 5MB)</div>
+        </div>
+        <div class="file-preview" id="ppFilePreview">
+          <span class="file-preview-icon">🖼️</span>
+          <span class="file-preview-name" id="ppFileName"></span>
+          <span class="file-preview-size" id="ppFileSize"></span>
+          <button class="file-preview-rm" onclick="removeFile('pp')" title="ลบไฟล์">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-confirm" onclick="confirmPay()">&#9989; ยืนยันการชำระเงิน</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  document.getElementById('usernameDisplay').innerText = localStorage.getItem('username') || 'สุริยา';
+
+  const PLANS = {
+    monthly:  { name:'รายเดือน',    desc:'สมัครเดือนต่อเดือน ยืดหยุ่นสูง',  price:'฿490',   period:'/ เดือน',   pct:100, daysLeft:0,  exp:'20 เม.ย. 2026', usedLabel:'ใช้ไป 1 เดือน',  benefits:['🎯 คอร์สทั้งหมด','🤖 AI แนะนำโปรแกรม','📈 ติดตามความก้าวหน้า','❌ ยกเลิกได้ทุกเวลา'] },
+    biannual: { name:'ราย 6 เดือน', desc:'ประหยัดกว่ารายเดือน 17%',          price:'฿2,450', period:'/ 6 เดือน', pct:50,  daysLeft:184, exp:'20 ก.ย. 2026', usedLabel:'ใช้ไป 3 เดือน', benefits:['🎥 Live Class 2 ครั้ง/เดือน','🥗 แผนโภชนาการส่วนตัว','📊 รายงานสุขภาพรายสัปดาห์','🤖 AI แนะนำโปรแกรม'] },
+    annual:   { name:'รายปี',       desc:'คุ้มค่าที่สุด ประหยัด ฿1,890',     price:'฿3,990', period:'/ ปี',      pct:25,  daysLeft:274, exp:'20 ธ.ค. 2026', usedLabel:'ใช้ไป 3 เดือน', benefits:['👑 โค้ชส่วนตัว 1-on-1','🎥 Live Class ไม่จำกัด','📜 ใบรับรองความสำเร็จ','⭐ คอร์ส Premium พิเศษ'] },
+  };
+
+  let activePlan = localStorage.getItem('activePlan') || null;
+  let pendingPlan = '';
+
+  function renderMyPlan(key) {
+    var wrap = document.getElementById('myPlanSection');
+    var empty = document.getElementById('myPlanEmpty');
+    var payCard = document.getElementById('payHistoryCard');
+    var payEmpty = document.getElementById('payHistoryEmpty');
+
+    if (!key) {
+      // ยังไม่มีแพ็กเกจ
+      wrap.style.display   = 'none';
+      empty.style.display  = 'block';
+      payCard.style.display  = 'none';
+      payEmpty.style.display = 'block';
+      return;
+    }
+
+    wrap.style.display   = 'block';
+    empty.style.display  = 'none';
+    payCard.style.display  = 'block';
+    payEmpty.style.display = 'none';
+
+    const p = PLANS[key];
+    document.getElementById('myPlanName').innerText = p.name;
+    document.getElementById('myPlanExp').innerHTML = 'หมดอายุ: ' + p.exp + ' · เหลืออีก <strong style="color:var(--accent)">' + p.daysLeft + ' วัน</strong>';
+    document.getElementById('pctLabel').innerText = p.pct + '%';
+    document.getElementById('daysUsedLabel').innerText = p.usedLabel;
+    document.getElementById('ringLabel').innerText = p.pct + '% ใช้ไปแล้ว';
+    document.getElementById('benefitsGrid').innerHTML = p.benefits.map(b =>
+      '<div class="benefit"><span class="benefit-icon">' + b.substring(0,2) + '</span>' + b.substring(2) + '</div>'
+    ).join('');
+    setTimeout(function() {
+      document.getElementById('daysFill').style.width = p.pct + '%';
+      var circ = 2 * Math.PI * 44;
+      document.getElementById('ringCircle').style.strokeDashoffset = circ * (1 - p.pct / 100);
+    }, 350);
+  }
+
+  function markActive(key) {
+    var colors = { monthly:'red', biannual:'orange', annual:'purple' };
+    ['monthly','biannual','annual'].forEach(function(k) {
+      var btn = document.getElementById('btn-' + k);
+      if (!btn) return;
+      if (k === key) {
+        btn.textContent = '✅ แพ็กเกจปัจจุบัน';
+        btn.className = 'btn-sub is-active';
+      } else {
+        btn.textContent = '🚀 สมัครเลย';
+        btn.className = 'btn-sub ' + colors[k];
+      }
+    });
+  }
+
+  markActive(activePlan);
+  renderMyPlan(activePlan);
+
+  function switchPayFields() {
+    var method = document.getElementById('payMethod').value;
+    document.getElementById('fieldsCard').style.display      = method === 'card'       ? 'block' : 'none';
+    document.getElementById('fieldsBank').style.display      = method === 'bank'       ? 'block' : 'none';
+    document.getElementById('fieldsPromptPay').style.display = method === 'promptpay'  ? 'block' : 'none';
+  }
+
+  function openModal(key) {
+    pendingPlan = key;
+    var p = PLANS[key];
+    document.getElementById('mTitle').innerText  = 'สมัคร ' + p.name;
+    document.getElementById('mDesc').innerText   = p.desc;
+    document.getElementById('mPrice').innerText  = p.price;
+    document.getElementById('mPeriod').innerText = p.period;
+    // reset ทุก field
+    ['cardName','cardNum','cardExp','cardCvv','bankSenderName','bankAccNum','ppSender','ppName']
+      .forEach(function(id){ var el = document.getElementById(id); if(el) el.value=''; });
+    removeFile('bank'); removeFile('pp');
+    // reset to card method
+    document.getElementById('payMethod').value = 'card';
+    switchPayFields();
+    document.getElementById('modalBg').classList.add('open');
+  }
+  function closeModal() { document.getElementById('modalBg').classList.remove('open'); }
+  function closeBg(e)   { if (e.target.id === 'modalBg') closeModal(); }
+
+  function fmtCard(el) {
+    var v = el.value.replace(/\D/g,'').substring(0,16);
+    el.value = v.replace(/(.{4})/g,'$1 ').trim();
+  }
+  function fmtExp(el) {
+    var v = el.value.replace(/\D/g,'');
+    if (v.length >= 2) v = v.substring(0,2) + '/' + v.substring(2,4);
+    el.value = v;
+  }
+
+  // ── FILE UPLOAD ──────────────────────────────────────
+  var uploadedFiles = { bank: null, pp: null };
+
+  function handleFile(prefix, input) {
+    var file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('ไฟล์ใหญ่เกิน 5MB กรุณาเลือกไฟล์ใหม่', false);
+      input.value = '';
+      return;
+    }
+    uploadedFiles[prefix] = file;
+    var isImg = file.type.startsWith('image/');
+    document.getElementById(prefix + 'FilePreview').classList.add('show');
+    document.getElementById(prefix + 'FileName').textContent = file.name;
+    document.getElementById(prefix + 'FileSize').textContent = (file.size / 1024).toFixed(0) + ' KB';
+    document.querySelector('#' + prefix + 'FilePreview .file-preview-icon').textContent = isImg ? '🖼️' : '📄';
+  }
+
+  function removeFile(prefix) {
+    uploadedFiles[prefix] = null;
+    var fileInput = document.getElementById(prefix + 'SlipFile');
+    if (fileInput) fileInput.value = '';
+    var preview = document.getElementById(prefix + 'FilePreview');
+    if (preview) preview.classList.remove('show');
+  }
+
+  // drag & drop visual feedback
+  ['bankDropZone','ppDropZone'].forEach(function(zoneId) {
+    var zone = document.getElementById(zoneId);
+    if (!zone) return;
+    zone.addEventListener('dragover',  function(e){ e.preventDefault(); zone.classList.add('drag'); });
+    zone.addEventListener('dragleave', function()  { zone.classList.remove('drag'); });
+    zone.addEventListener('drop',      function(e){
+      e.preventDefault(); zone.classList.remove('drag');
+      var prefix = zoneId === 'bankDropZone' ? 'bank' : 'pp';
+      var fileInput = document.getElementById(prefix + 'SlipFile');
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFile(prefix, fileInput);
+      }
+    });
+  });
+
+  function confirmPay() {
+    var method = document.getElementById('payMethod').value;
+
+    if (method === 'card') {
+      var name = document.getElementById('cardName').value.trim();
+      var num  = document.getElementById('cardNum').value.trim();
+      if (!name)           { showToast('กรุณากรอกชื่อบนบัตร', false); return; }
+      if (num.length < 19) { showToast('กรุณากรอกหมายเลขบัตรให้ครบ', false); return; }
+    } else if (method === 'bank') {
+      var sName = document.getElementById('bankSenderName').value.trim();
+      var sAcc  = document.getElementById('bankAccNum').value.trim();
+      if (!sName) { showToast('กรุณากรอกชื่อเจ้าของบัญชี', false); return; }
+      if (!sAcc)  { showToast('กรุณากรอกเลขบัญชีที่โอนจาก', false); return; }
+      if (!uploadedFiles.bank) { showToast('กรุณาแนบหลักฐานการโอน', false); return; }
+    } else if (method === 'promptpay') {
+      var ppS = document.getElementById('ppSender').value.trim();
+      var ppN = document.getElementById('ppName').value.trim();
+      if (!ppS) { showToast('กรุณากรอกเบอร์โทร / เลขบัตรประชาชน', false); return; }
+      if (!ppN) { showToast('กรุณากรอกชื่อผู้โอน', false); return; }
+      if (!uploadedFiles.pp) { showToast('กรุณาแนบสลิปการโอน', false); return; }
+    }
+
+    closeModal();
+    activePlan = pendingPlan;
+    localStorage.setItem('activePlan', activePlan);
+
+    // เพิ่มรายการประวัติชำระใหม่
+    var icons = { monthly:'⚡', biannual:'🔥', annual:'👑' };
+    var today = new Date().toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'2-digit' });
+    var card = document.getElementById('payHistoryCard');
+    // ลบ placeholder rows ถ้ายังมีอยู่ (first time)
+    var placeholder = card.querySelector('.pay-placeholder');
+    if (placeholder) placeholder.remove();
+
+    var newRow = document.createElement('div');
+    newRow.className = 'pay-row';
+    newRow.innerHTML =
+      '<div class="pay-left">' +
+        '<div class="pay-ico">' + icons[activePlan] + '</div>' +
+        '<div><div class="pay-name">' + PLANS[activePlan].name + '</div><div class="pay-date">' + today + '</div></div>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:8px">' +
+        '<span class="pay-status ok">ชำระแล้ว</span>' +
+        '<span class="pay-amt">' + PLANS[activePlan].price + '</span>' +
+      '</div>';
+    // แทรกหลัง card-title
+    var title = card.querySelector('.card-title');
+    title.insertAdjacentElement('afterend', newRow);
+
+    markActive(activePlan);
+    renderMyPlan(activePlan);
+    showToast('🎉 สมัครสำเร็จ! ยินดีต้อนรับสู่แพ็กเกจ ' + PLANS[activePlan].name);
+  }
+
+  function showToast(msg, ok) {
+    if (ok === undefined) ok = true;
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast show' + (ok ? '' : ' err');
+    setTimeout(function(){ el.classList.remove('show'); }, 3200);
+  }
+
+  function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+</script>
+</body>
+</html>
