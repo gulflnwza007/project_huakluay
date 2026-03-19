@@ -1,80 +1,178 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เข้าสู่ระบบ - Health Tracker</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #e9ecef; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-container { background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: #333; margin-bottom: 1.5rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.5rem; color: #666; }
-        input { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 0.75rem; background-color: #28a745; border: none; border-radius: 6px; color: white; font-size: 1rem; cursor: pointer; transition: background 0.3s; }
-        button:hover { background-color: #218838; }
-        .error-msg { color: #dc3545; text-align: center; margin-top: 1rem; display: none; }
-        .register-link { text-align: center; margin-top: 1.5rem; font-size: 0.9rem; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ — IT Body Patch</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background:
+        radial-gradient(ellipse 55% 45% at 15% 15%, rgba(255,69,0,0.18) 0%, transparent 65%),
+        radial-gradient(ellipse 45% 55% at 85% 85%, rgba(255,140,0,0.12) 0%, transparent 60%),
+        #0f0602;
+    }
+
+    /* Particle sparks */
+    .sparks { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+    .spark {
+      position: absolute;
+      width: 2px; height: 2px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0;
+      animation: sparkFloat var(--dur, 8s) var(--delay, 0s) infinite ease-in-out;
+    }
+    @keyframes sparkFloat {
+      0%   { opacity: 0; transform: translateY(100vh) scale(0.5); }
+      10%  { opacity: 0.8; }
+      90%  { opacity: 0.4; }
+      100% { opacity: 0; transform: translateY(-20px) scale(1.2); }
+    }
+
+    .auth-card { animation: cardIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards; opacity: 0; }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(30px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .form-group { animation: fadeUp 0.4s ease both; }
+    .form-group:nth-child(1) { animation-delay: 0.15s; }
+    .form-group:nth-child(2) { animation-delay: 0.22s; }
+    .btn-save { animation: fadeUp 0.4s 0.3s ease both; }
+
+    .input-wrap { position: relative; }
+    .input-icon {
+      position: absolute; right: 14px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.18rem; pointer-events: none;
+      opacity: 0.35; transition: opacity 0.2s;
+    }
+    .input-wrap:focus-within .input-icon { opacity: 0.7; }
+    .input-wrap input { padding-right: 42px; }
+
+    .login-label {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.5px; color: var(--text-dim);
+      border: 1px solid var(--border); border-radius: 20px;
+      padding: 4px 10px; margin-bottom: 22px;
+    }
+    .login-label::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--primary); box-shadow: 0 0 8px var(--primary-glow);
+    }
+
+    .divider-text {
+      text-align: center; font-size: 0.885rem; color: var(--text-dim);
+      margin: 16px 0; position: relative;
+    }
+    .divider-text::before, .divider-text::after {
+      content: ''; position: absolute; top: 50%; width: 40%;
+      height: 1px; background: var(--border);
+    }
+    .divider-text::before { left: 0; }
+    .divider-text::after { right: 0; }
+  </style>
 </head>
 <body>
 
-<div class="login-container">
-    <h2>Health Tracker Login</h2>
-    <form id="loginForm">
-        <div class="form-group">
-            <label>Username</label>
-            <input type="text" id="username" placeholder="กรอกชื่อผู้ใช้" required>
-        </div>
-        <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="password" placeholder="กรอกรหัสผ่าน" required>
-        </div>
-        <button type="submit">เข้าสู่ระบบ</button>
-    </form>
-    <div id="errorMsg" class="error-msg">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
-    <div class="register-link">
-        ยังไม่มีบัญชี? <a href="register.html">สมัครสมาชิกที่นี่</a>
+<!-- Floating sparks -->
+<div class="sparks" id="sparks"></div>
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      <div class="logo-circle">🏥</div>
+      <h1>IT Body Patch</h1>
+      <p>Health Debugger · IT Professional System</p>
     </div>
+
+    <div class="login-label">🔐 &nbsp;เข้าสู่ระบบ</div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label>ชื่อผู้ใช้งาน</label>
+        <div class="input-wrap">
+          <input type="text" id="username" placeholder="กรอกชื่อผู้ใช้งาน" autocomplete="username" required>
+          <span class="input-icon">👤</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>รหัสผ่าน</label>
+        <div class="input-wrap">
+          <input type="password" id="password" placeholder="กรอกรหัสผ่าน" autocomplete="current-password" required>
+          <span class="input-icon">🔒</span>
+        </div>
+      </div>
+
+      <div id="errorMsg"></div>
+
+      <button type="submit" class="btn-save" style="margin-top: 6px;">เข้าสู่ระบบ</button>
+    </form>
+
+    <div class="auth-footer">
+      ยังไม่มีบัญชีในระบบ? <a href="register.html">สมัครสมาชิกใหม่</a>
+    </div>
+  </div>
 </div>
 
 <script>
-    const loginForm = document.getElementById('loginForm');
-    const errorMsg = document.getElementById('errorMsg');
+  // Generate spark particles
+  const sparksEl = document.getElementById('sparks');
+  for (let i = 0; i < 22; i++) {
+    const s = document.createElement('div');
+    s.className = 'spark';
+    s.style.cssText = `
+      left: ${Math.random() * 100}%;
+      --dur: ${5 + Math.random() * 8}s;
+      --delay: ${Math.random() * 8}s;
+      background: ${Math.random() > 0.5 ? '#ff4500' : '#ff8c00'};
+      width: ${1 + Math.random() * 3}px;
+      height: ${1 + Math.random() * 3}px;
+    `;
+    sparksEl.appendChild(s);
+  }
 
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
+  const loginForm = document.getElementById('loginForm');
+  const errorMsg  = document.getElementById('errorMsg');
 
-        try {
-            // ยิงไปที่ Backend API ที่เราทำไว้
-            const response = await fetch('http://localhost:5000/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = loginForm.querySelector('button[type="submit"]');
+    btn.textContent = 'กำลังตรวจสอบ...';
+    btn.disabled = true;
+    errorMsg.style.display = 'none';
 
-            const data = await response.json();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
 
-            if (response.ok) {
-                // เก็บข้อมูลผู้ใช้ไว้ในเครื่อง
-                localStorage.setItem('userId', data.user.id);
-                localStorage.setItem('username', data.user.username);
-                
-                alert('Login สำเร็จ! กำลังพาไปหน้า Dashboard');
-                window.location.href = 'index.html'; // ส่งไปหน้า Dashboard
-            } else {
-                errorMsg.style.display = 'block';
-                errorMsg.innerText = data.message;
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('ไม่สามารถเชื่อมต่อกับ Server ได้');
-        }
-    });
+    try {
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('userId',   data.user.id);
+        localStorage.setItem('username', data.user.username);
+        window.location.href = 'index.html';
+      } else {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = data.message;
+        btn.textContent = 'เข้าสู่ระบบ';
+        btn.disabled = false;
+      }
+    } catch {
+      errorMsg.style.display = 'block';
+      errorMsg.innerText = 'ไม่สามารถเชื่อมต่อ Server ได้ — กรุณาตรวจสอบการรัน node server.js';
+      btn.textContent = 'เข้าสู่ระบบ';
+      btn.disabled = false;
+    }
+  });
 </script>
-
 </body>
 </html>

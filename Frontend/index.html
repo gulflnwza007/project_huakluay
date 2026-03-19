@@ -1,309 +1,570 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Health Debugger - IT Professional Health System</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root { --primary: #2c3e50; --secondary: #27ae60; --danger: #e74c3c; --light: #f8f9fa; --blue: #2980b9; --purple: #6c5ce7; }
-        body { font-family: 'Sarabun', 'Segoe UI', sans-serif; background: #e9ecef; margin: 0; padding: 20px; color: #2d3436; }
-        .container { max-width: 1200px; margin: auto; }
-        .header { background: var(--primary); color: white; padding: 25px; border-radius: 15px; text-align: center; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; color: var(--primary); font-size: 1.4rem; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; font-size: 0.95rem; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box; font-size: 1rem; transition: border-color 0.2s; }
-        input:focus { border-color: var(--blue); outline: none; }
-        button { cursor: pointer; padding: 14px; border: none; border-radius: 8px; font-weight: bold; transition: 0.3s; width: 100%; font-size: 1rem; }
-        .btn-save { background: var(--secondary); color: white; }
-        .btn-save:hover { background: #219150; }
-        .btn-test { background: var(--purple); color: white; margin-top: 15px; }
-        
-        .water-status { background: #f0f7ff; padding: 20px; border-radius: 10px; border-left: 5px solid var(--blue); margin-top: 15px; text-align: center; }
-        .water-needed { color: var(--danger); font-weight: 700; font-size: 1.3rem; }
-        
-        .mental-scroll { max-height: 350px; overflow-y: auto; padding: 15px; border: 1px solid #dee2e6; border-radius: 10px; background: #fdfdfd; }
-        #mentalStatusBox { padding: 18px; border-radius: 10px; font-weight: bold; margin-top: 20px; text-align: center; display: none; font-size: 1.1rem; }
-        
-        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health Debugger — IT Body Patch</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background:
+        radial-gradient(ellipse 55% 40% at 8% 5%, rgba(255,69,0,0.16) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 50% at 92% 85%, rgba(255,140,0,0.1) 0%, transparent 58%),
+        #0f0602;
+    }
+
+    /* ─── TOPBAR ─── */
+    .topbar {
+      position: sticky; top: 0; z-index: 1000;
+      background: rgba(8,3,1,0.94);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,69,0,0.2);
+      padding: 0 28px; height: 58px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 24px rgba(255,69,0,0.1);
+    }
+    .topbar::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,80,0,0.5), transparent);
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 8px; }
+
+    .app-logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.298rem; font-weight: 900; letter-spacing: 0.5px;
+      color: #fff; margin-right: 6px; white-space: nowrap;
+      text-shadow: 0 0 20px rgba(255,100,0,0.4);
+    }
+
+    .nav-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-family: 'Barlow', sans-serif;
+      font-weight: 700; font-size: 0.968rem;
+      text-decoration: none; transition: all 0.2s; white-space: nowrap;
+    }
+    .nav-pill.exercise {
+      background: linear-gradient(135deg, rgba(255,69,0,0.25), rgba(255,140,0,0.2));
+      color: #ff8c00; border: 1px solid rgba(255,140,0,0.3);
+    }
+    .nav-pill.exercise:hover { background: linear-gradient(135deg,#ff4500,#ff8c00); color: #fff; border-color: transparent; box-shadow: 0 4px 16px rgba(255,100,0,0.45); }
+    .nav-pill.mental {
+      background: rgba(180,60,255,0.12);
+      color: #c084fc; border: 1px solid rgba(180,60,255,0.25);
+    }
+    .nav-pill.mental:hover { background: linear-gradient(135deg,#9333ea,#c084fc); color: #fff; border-color: transparent; box-shadow: 0 4px 16px rgba(180,60,255,0.4); }
+
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .user-chip {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.968rem; color: rgba(255,200,180,0.55); white-space: nowrap;
+    }
+    .user-chip .pulse-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.8);
+      animation: dotPulse 2s infinite;
+    }
+    @keyframes dotPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
+    .user-name { color: #fff; font-weight: 700; font-size: 1.038rem; }
+
+    .btn-logout {
+      padding: 6px 16px;
+      background: rgba(255,30,30,0.12);
+      border: 1px solid rgba(255,30,30,0.3);
+      color: #ff7a7a; border-radius: 7px;
+      cursor: pointer; font-size: 0.944rem; font-weight: 700;
+      font-family: 'Barlow', inherit; transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-logout:hover { background: linear-gradient(135deg,#ff1f1f,#ff4500); color: #fff; border-color: transparent; box-shadow: 0 4px 14px rgba(255,30,0,0.4); }
+
+    /* ─── LAYOUT ─── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px 24px; position: relative; z-index: 1; }
+    .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+    /* ─── CARD OVERRIDES ─── */
+    .card {
+      background: rgba(20,8,3,0.88);
+      border: 1px solid rgba(255,69,0,0.18);
+      border-radius: 16px; padding: 22px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,100,30,0.07);
+      margin-bottom: 18px;
+      transition: transform 0.3s ease, border-color 0.3s, box-shadow 0.3s;
+      animation: fadeUp 0.45s ease both;
+      position: relative; overflow: hidden;
+    }
+    .card:hover { transform: translateY(-3px); border-color: rgba(255,100,30,0.35); box-shadow: 0 14px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,100,30,0.1); }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+    .card-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.18rem; font-weight: 800; letter-spacing: 0.5px;
+      color: #fff; margin-bottom: 18px;
+      padding-bottom: 12px; border-bottom: 1px solid rgba(255,69,0,0.15);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card-title .title-badge {
+      background: rgba(255,69,0,0.15); border: 1px solid rgba(255,69,0,0.3);
+      color: #ff8c00; font-size: 0.767rem; padding: 2px 7px;
+      border-radius: 20px; font-weight: 700; letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* ─── FORM ─── */
+    label { color: rgba(255,200,180,0.7); font-size: 0.968rem; font-weight: 600; margin-bottom: 5px; }
+    input, select {
+      background: rgba(15,6,2,0.8);
+      border: 1px solid rgba(255,69,0,0.2);
+      color: #fff5ef;
+      border-radius: 9px; padding: 10px 13px; font-size: 1.062rem;
+      transition: all 0.2s; width: 100%;
+    }
+    input::placeholder { color: rgba(255,180,150,0.3); }
+    input:focus, select:focus {
+      outline: none; border-color: #ff4500;
+      background: rgba(25,8,3,0.9);
+      box-shadow: 0 0 0 3px rgba(255,69,0,0.15);
+    }
+    select option { background: #1a0804; }
+    input[readonly] { background: rgba(34,197,94,0.06); color: #4ade80; border-color: rgba(34,197,94,0.2); }
+
+    .sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { margin-bottom: 12px; }
+
+    .exercise-section {
+      background: rgba(255,69,0,0.05);
+      border: 1px solid rgba(255,69,0,0.15);
+      border-radius: 12px; padding: 14px; margin: 12px 0;
+    }
+    .exercise-section label {
+      color: #ff8c00; font-weight: 700; font-size: 0.968rem; margin-bottom: 10px;
+    }
+
+    .btn-action {
+      background: var(--grad-fire);
+      color: #fff; border: none;
+      padding: 11px 18px; border-radius: 9px;
+      cursor: pointer; font-size: 1.038rem; font-weight: 700;
+      font-family: 'Barlow', 'IBM Plex Sans Thai', inherit;
+      transition: all 0.25s; width: 100%;
+      box-shadow: 0 4px 18px rgba(255,69,0,0.35);
+      position: relative; overflow: hidden;
+    }
+    .btn-action::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,transparent 60%); pointer-events:none; }
+    .btn-action:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,100,30,0.55); filter: brightness(1.08); }
+
+    .btn-recommend {
+      background: rgba(255,140,0,0.12);
+      border: 1px solid rgba(255,140,0,0.3);
+      color: #ffb347; padding: 9px 14px;
+      border-radius: 8px; cursor: pointer; font-size: 0.968rem;
+      font-weight: 700; margin-top: 8px; width: 100%;
+      font-family: inherit; transition: all 0.2s;
+    }
+    .btn-recommend:hover { background: rgba(255,140,0,0.2); border-color: rgba(255,140,0,0.5); color: #ffcc80; }
+
+    #recResult { margin-top: 8px; font-size: 0.968rem; color: #ffb347; font-weight: 600; min-height: 20px; }
+    #waterReminder { font-size: 0.944rem; color: #60a5fa; margin-top: 5px; }
+
+    /* ─── STATS BOX ─── */
+    .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 4px; }
+    .stats-box {
+      background: rgba(255,69,0,0.07);
+      border: 1px solid rgba(255,69,0,0.18);
+      border-radius: 12px; padding: 14px; text-align: center;
+      transition: all 0.25s;
+    }
+    .stats-box:hover { border-color: rgba(255,100,30,0.4); transform: translateY(-2px); }
+    .stats-label { font-size: 0.885rem; color: rgba(255,200,180,0.55); font-weight: 600; margin-bottom: 6px; }
+    .stats-value {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.65rem; font-weight: 800;
+      color: #ff8c00; line-height: 1;
+    }
+
+    /* ─── HISTORY TABLE ─── */
+    .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .history-table th {
+      background: rgba(255,69,0,0.1); color: rgba(255,180,150,0.7);
+      padding: 10px 12px; text-align: left; font-size: 0.92rem;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .history-table td { padding: 10px 12px; border-bottom: 1px solid rgba(255,69,0,0.08); font-size: 1.003rem; color: rgba(255,220,200,0.8); }
+    .history-table tr:last-child td { border-bottom: none; }
+    .history-table tr:hover td { background: rgba(255,69,0,0.05); }
+    .tag-exercise {
+      background: rgba(255,69,0,0.2); border: 1px solid rgba(255,69,0,0.3);
+      color: #ff8c00; padding: 2px 8px; border-radius: 6px; font-size: 0.885rem; font-weight: 700;
+    }
+
+    /* ─── MENTAL HEALTH CTA ─── */
+    .mental-cta {
+      text-align: center; padding: 32px 20px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    }
+    .mental-icon { font-size: 3rem; filter: drop-shadow(0 0 18px rgba(192,132,252,0.6)); }
+    .mental-cta h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.298rem; font-weight: 800; color: #c084fc;
+    }
+    .mental-cta p { font-size: 0.968rem; color: rgba(255,200,180,0.55); line-height: 1.6; max-width: 280px; }
+    .btn-mental {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 10px 22px; border-radius: 10px;
+      background: linear-gradient(135deg, rgba(147,51,234,0.6), rgba(192,132,252,0.4));
+      border: 1px solid rgba(192,132,252,0.35);
+      color: #e9d5ff; font-weight: 700; font-size: 1.038rem; text-decoration: none;
+      box-shadow: 0 4px 18px rgba(147,51,234,0.3); transition: all 0.2s;
+    }
+    .btn-mental:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(147,51,234,0.45); background: linear-gradient(135deg,#7c3aed,#a855f7); border-color: transparent; color: #fff; }
+
+    /* ─── TOAST ─── */
+    .toast {
+      position: fixed; left: 50%; bottom: 24px;
+      transform: translateX(-50%);
+      background: rgba(255,69,0,0.92);
+      color: #fff; border-radius: 12px;
+      padding: 10px 20px; font-size: 1.038rem; font-weight: 700;
+      box-shadow: 0 8px 28px rgba(255,69,0,0.5);
+      z-index: 9999; display: none; align-items: center; gap: 8px;
+      backdrop-filter: blur(12px);
+    }
+    .toast.show { display: flex; animation: popIn 0.3s ease; }
+    @keyframes popIn { from{opacity:0;transform:translate(-50%,16px)} to{opacity:1;transform:translate(-50%,0)} }
+
+    /* Chart override */
+    canvas { position: relative; z-index: 1; }
+  </style>
 </head>
 <body>
 
+<nav class="topbar">
+  <div class="topbar-left">
+    <span class="app-logo">🏥 IT Body Patch</span>
+    <a href="exercise.html" class="nav-pill exercise">🏋️ Exercise</a>
+    <a href="mental.html"   class="nav-pill mental">🧠 Mental Health</a>
+  </div>
+  <div class="topbar-right">
+    <div class="user-chip">
+      <span class="pulse-dot"></span>
+      <span style="color:rgba(255,200,180,0.45); font-size:0.92rem;">ผู้ใช้งาน:</span>
+      <span id="usernameDisplay" class="user-name">...</span>
+    </div>
+    <button class="btn-logout" id="logoutBtn" onclick="logout()">ออกจากระบบ</button>
+  </div>
+</nav>
+
 <div class="container">
-    <div class="header">
-        <h1>🏥 IT Body Patch v1.0</h1>
-        <div>
-            ผู้ใช้งาน: <span id="usernameDisplay">...</span> | 
-            <button onclick="logout()" style="width: auto; padding: 8px 20px; background: var(--danger); color: white;">ออกจากระบบ</button>
+  <div class="main-grid">
+
+    <!-- LEFT COLUMN -->
+    <div>
+      <!-- Health Log Form -->
+      <div class="card" style="animation-delay:0.05s">
+        <div class="card-title">📝 บันทึกข้อมูลสุขภาพ <span class="title-badge">Daily Log</span></div>
+        <form id="healthForm">
+          <div class="sub-grid">
+            <div class="form-group">
+              <label id="dateLabel">วันที่บันทึก</label>
+              <input type="date" id="logDate" required>
+            </div>
+            <div class="form-group">
+              <label id="weightLabel">น้ำหนักตัว (กก.)</label>
+              <input type="number" step="0.1" id="weight" placeholder="เช่น 70.5" oninput="calculateWaterGoal()" required>
+            </div>
+          </div>
+          <div class="sub-grid">
+            <div class="form-group">
+              <label id="calInLabel">พลังงานที่ได้รับ (kcal)</label>
+              <input type="number" id="calIn" placeholder="เช่น 2000" required>
+            </div>
+            <div class="form-group">
+              <label id="calOutLabel">พลังงานที่ใช้ไป (kcal)</label>
+              <input type="number" id="calOut" placeholder="0" readonly>
+            </div>
+          </div>
+          <div class="exercise-section">
+            <label id="activityLabel">🏃 กิจกรรมการออกกำลังกาย</label>
+            <div class="sub-grid">
+              <div class="form-group" style="margin-bottom:0">
+                <select id="exType" onchange="calcExCal()">
+                  <option value="none">ยังไม่ได้ออกกำลังกาย</option>
+                  <option value="200">เดินเร็ว (Low)</option>
+                  <option value="500">วิ่ง/ว่ายน้ำ (High)</option>
+                  <option value="400">ปั่นจักรยาน (Moderate)</option>
+                  <option value="300">เวทเทรนนิ่ง (Strength)</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <input type="number" id="exDuration" placeholder="ระยะเวลา (นาที)" oninput="calcExCal()">
+              </div>
+            </div>
+            <button type="button" class="btn-recommend" id="recommendBtn" onclick="getExerciseRecommendation()">💡 ขอคำแนะนำการออกกำลังกายจากระบบ (AI)</button>
+            <div id="recResult"></div>
+          </div>
+          <div class="form-group">
+            <label id="waterLabel">💧 ดื่มน้ำ (แก้ว)</label>
+            <input type="number" id="water" value="0" oninput="calculateWaterGoal()">
+            <div id="waterReminder">กรอกน้ำหนักเพื่อคำนวณเป้าหมายน้ำ</div>
+          </div>
+          <button id="saveHealthBtn" type="submit" class="btn-action">💾 บันทึกข้อมูลสุขภาพ</button>
+        </form>
+      </div>
+
+      <!-- Mental CTA -->
+      <div class="card" style="animation-delay:0.12s">
+        <div class="mental-cta">
+          <div class="mental-icon">🧠</div>
+          <h3 id="mentalCardTitle">แบบประเมินสุขภาพจิตเบื้องต้น</h3>
+          <p id="mentalDesc">ประเมิน PHQ-9 เพื่อดูสุขภาพจิตของคุณ พร้อมบันทึกประวัติและติดตามแนวโน้ม</p>
+          <a href="mental.html" class="btn-mental">🧠 ไปหน้าประเมินสุขภาพจิต</a>
         </div>
+      </div>
     </div>
 
-    <div class="grid">
-        <div class="card">
-            <h2>📝 บันทึกข้อมูลสุขภาพและกิจกรรม</h2>
-            <form id="healthForm">
-                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div class="form-group"><label>วันที่บันทึก</label><input type="date" id="logDate" required></div>
-                    <div class="form-group"><label>น้ำหนักตัว (กก.)</label><input type="number" step="0.1" id="weight" oninput="calculateWaterGoal()" required></div>
-                </div>
-
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #e9ecef;">
-                    <label>🏃 กิจกรรมการออกกำลังกาย</label>
-                    <div class="grid" style="grid-template-columns: 1.5fr 1fr; gap: 10px;">
-                        <select id="exType" onchange="checkIfNoExercise()">
-                            <option value="none">ยังไม่ได้ออกกำลังกาย</option>
-                            <option value="200">เดินเร็ว (Low Intensity)</option>
-                            <option value="500">วิ่ง/ว่ายน้ำ (High Intensity)</option>
-                            <option value="400">ปั่นจักรยาน (Moderate Intensity)</option>
-                            <option value="300">เวทเทรนนิ่ง (Strength Training)</option>
-                        </select>
-                        <input type="number" id="exDuration" placeholder="เวลา (นาที)" oninput="calcExCal()">
-                    </div>
-                    <div id="adviceTrigger" style="display: block; margin-top: 10px;">
-                        <button type="button" onclick="generateExerciseAdvice()" style="background: #e67e22; color: white; padding: 8px; font-size: 0.85rem; height: auto;">
-                            💡 ขอคำแนะนำการออกกำลังกายที่เหมาะสม
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div class="form-group"><label>พลังงานที่ได้รับ (kcal)</label><input type="number" id="calIn" required></div>
-                    <div class="form-group"><label>พลังงานที่ใช้ไป (kcal)</label><input type="number" id="calOut" required></div>
-                </div>
-
-                <div class="form-group">
-                    <label>💧 ปริมาณการดื่มน้ำ (แก้วมาตรฐาน 250 มล.)</label>
-                    <input type="number" id="water" value="0" oninput="calculateWaterGoal()">
-                </div>
-
-                <div id="waterReminder" class="water-status">
-                    ระบบรอการป้อนข้อมูลน้ำหนักเพื่อคำนวณปริมาณน้ำที่เหมาะสม
-                </div>
-
-                <button type="submit" class="btn-save" style="margin-top:20px;">💾 บันทึกข้อมูลภาพรวมรายวัน</button>
-            </form>
-            
-            <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
-            <h2>📈 สถิติแนวโน้มน้ำหนักตัว</h2>
-            <canvas id="weightChart"></canvas>
+    <!-- RIGHT COLUMN -->
+    <div>
+      <!-- Stats -->
+      <div class="card" style="animation-delay:0.08s">
+        <div class="card-title" id="statsCardTitle">🏆 สถิติการออกกำลังกาย <span class="title-badge">API Insights</span></div>
+        <div class="stats-row">
+          <div class="stats-box">
+            <div class="stats-label" id="labelWeeklyBurn">🔥 เผาผลาญสัปดาห์นี้</div>
+            <div class="stats-value" id="weeklyBurn">—</div>
+          </div>
+          <div class="stats-box">
+            <div class="stats-label" id="labelTopActivity">⭐️ กิจกรรมยอดฮิต</div>
+            <div class="stats-value" id="topActivity" style="font-size:1.357rem;">—</div>
+          </div>
         </div>
+      </div>
 
-        <div class="card">
-            <h2>🧠 แบบประเมินสุขภาพจิตเบื้องต้น (9Q)</h2>
-            <p style="font-size: 0.9rem; color: #6c757d; margin-bottom: 15px;">เกณฑ์การประเมินอาการในช่วงระยะเวลา 2 สัปดาห์ที่ผ่านมา</p>
-            
-            <div class="mental-scroll" id="qContainer"></div>
-            
-            <button onclick="checkMental()" class="btn-test">📊 ประมวลผลและแสดงกราฟวิเคราะห์</button>
-            <div id="mentalStatusBox"></div>
-            <div style="width: 280px; margin: 25px auto;"><canvas id="mentalChart"></canvas></div>
-            <div id="mentalAdvice" style="text-align: center; font-size: 1rem; color: #495057; line-height: 1.5;"></div>
+      <!-- Weight Chart -->
+      <div class="card" style="animation-delay:0.14s">
+        <div class="card-title" id="chart1Title">📊 แนวโน้มน้ำหนัก</div>
+        <canvas id="weightChart" style="max-height:230px;"></canvas>
+      </div>
+
+      <!-- Burn Trend -->
+      <div class="card" style="animation-delay:0.18s">
+        <div class="card-title" id="burnTrendTitle">📈 แนวโน้มการเผาผลาญ 7 วัน</div>
+        <canvas id="burnTrendChart" style="max-height:220px;"></canvas>
+      </div>
+
+      <!-- History Table -->
+      <div class="card" style="animation-delay:0.22s">
+        <div class="card-title" id="historyCardTitle">🏃 ประวัติกิจกรรมล่าสุด</div>
+        <div style="max-height:240px; overflow-y:auto;">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th id="histDateHeader">วันที่</th>
+                <th id="histActivityHeader">กิจกรรม</th>
+                <th id="histDurationHeader">เวลา</th>
+                <th id="histBurnHeader">เผาผลาญ</th>
+              </tr>
+            </thead>
+            <tbody id="exerciseHistoryBody">
+              <tr><td colspan="4" style="text-align:center;color:rgba(255,200,180,0.4);padding:20px;">กำลังโหลดข้อมูล...</td></tr>
+            </tbody>
+          </table>
         </div>
+      </div>
     </div>
+
+  </div>
 </div>
 
 <script>
-    const userId = localStorage.getItem('userId');
-    if (!userId) window.location.href = 'login.html';
+  let weightLineChart, burnTrendChart;
+  let chartLanguage = 'th';
+  const userId = localStorage.getItem('userId') || 1;
 
-    let mentalPieChart, weightLineChart;
+  window.onload = () => {
+    document.getElementById('logDate').valueAsDate = new Date();
+    const savedLang = localStorage.getItem('appLang');
+    if (savedLang === 'th' || savedLang === 'en') chartLanguage = savedLang;
+    document.documentElement.setAttribute('lang', chartLanguage);
+    updateLanguageText();
+    loadData();
+    loadExerciseHistory();
+  };
 
-    // --- 1. ระบบคำนวณน้ำ ---
-    function calculateWaterGoal() {
-        const weight = parseFloat(document.getElementById('weight').value);
-        const waterDrank = parseInt(document.getElementById('water').value) || 0;
-        const reminderDiv = document.getElementById('waterReminder');
+  function showToast(msg) {
+    let toast = document.getElementById('toastEl');
+    if (!toast) { toast = document.createElement('div'); toast.id = 'toastEl'; toast.className = 'toast'; document.body.appendChild(toast); }
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  }
 
-        if (!weight) return;
+  async function loadData() {
+    const savedUser = localStorage.getItem('username') || 'user';
+    document.getElementById('usernameDisplay').innerText = savedUser;
+    showToast('กำลังโหลดข้อมูล...');
+    try {
+      const [logsRes, statsRes] = await Promise.all([
+        fetch(`http://localhost:5000/api/logs/${userId}`),
+        fetch(`http://localhost:5000/api/stats/${userId}`)
+      ]);
+      const logs = logsRes.ok ? await logsRes.json() : [];
+      const stats = statsRes.ok ? await statsRes.json() : null;
 
-        const totalGoalML = weight * 33;
-        const totalGoalGlasses = Math.ceil(totalGoalML / 250);
-        const remaining = totalGoalGlasses - waterDrank;
+      if (logs.length > 0) { renderComboChart(logs); renderBurnTrendChart(stats?.trend || []); }
 
-        if (remaining > 0) {
-            reminderDiv.innerHTML = `เป้าหมายรายวัน: <b>${totalGoalGlasses} แก้ว</b> | ปริมาณที่ต้องดื่มเพิ่ม: <span class="water-needed">${remaining} แก้ว</span>`;
-            reminderDiv.style.borderColor = "var(--blue)";
-        } else {
-            reminderDiv.innerHTML = `✅ <b>บรรลุเป้าหมาย:</b> ปริมาณการดื่มน้ำเพียงพอต่อความต้องการของร่างกาย`;
-            reminderDiv.style.borderColor = "var(--secondary)";
-        }
+      if (stats?.weekly_burn > 0) {
+        document.getElementById('weeklyBurn').innerText = `${stats.weekly_burn} kcal`;
+        document.getElementById('topActivity').innerText = stats.top_activity;
+        renderBurnTrendChart(stats.trend || []);
+      } else {
+        document.getElementById('weeklyBurn').innerText = '— kcal';
+        document.getElementById('topActivity').innerText = '—';
+      }
+    } catch { showToast('ไม่สามารถโหลดข้อมูลได้'); }
+  }
+
+  async function loadExerciseHistory() {
+    const body = document.getElementById('exerciseHistoryBody');
+    try {
+      const res = await fetch(`http://localhost:5000/api/exercises/${userId}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      if (data.length === 0) {
+        body.innerHTML = `<tr><td colspan="4" style="text-align:center;color:rgba(255,200,180,0.4);padding:20px;">ยังไม่มีประวัติกิจกรรม</td></tr>`;
+        return;
+      }
+      body.innerHTML = data.map(item => {
+        const date = new Date(item.exercise_date).toLocaleDateString('th-TH', {day:'numeric',month:'short'});
+        return `<tr>
+          <td>${date}</td>
+          <td><span class="tag-exercise">${item.exercise_type}</span></td>
+          <td>${item.duration_minutes} น.</td>
+          <td style="color:#f97316;font-weight:700;">-${item.calories_burned} kcal</td>
+        </tr>`;
+      }).join('');
+    } catch {
+      body.innerHTML = `<tr><td colspan="4" style="text-align:center;color:rgba(255,200,180,0.4);padding:20px;">กรุณาตรวจสอบ Backend</td></tr>`;
     }
+  }
 
-    // --- 2. ระบบจัดการการออกกำลังกาย ---
-    function checkIfNoExercise() {
-        const exType = document.getElementById('exType').value;
-        const adviceTrigger = document.getElementById('adviceTrigger');
-        // แสดงปุ่มแนะนำเฉพาะเมื่อเลือก "ยังไม่ได้ออกกำลังกาย"
-        adviceTrigger.style.display = (exType === "none") ? "block" : "none";
-        if (exType !== "none") calcExCal();
+  function calcExCal() {
+    const type = document.getElementById('exType').value;
+    const mins = document.getElementById('exDuration').value || 0;
+    document.getElementById('calOut').value = (type !== 'none') ? Math.round((parseInt(type)/60)*mins) : 0;
+  }
+
+  function calculateWaterGoal() {
+    const w = document.getElementById('weight').value;
+    const current = document.getElementById('water').value;
+    if (w) {
+      const goal = Math.ceil((w * 2.2 * 30 / 2) / 250);
+      document.getElementById('waterReminder').innerText = `เป้าหมายวันนี้: ${goal} แก้ว | ดื่มแล้ว: ${current} แก้ว`;
     }
+  }
 
-    function calcExCal() {
-        const rate = parseInt(document.getElementById('exType').value) || 0;
-        const mins = parseInt(document.getElementById('exDuration').value) || 0;
-        const burned = Math.round((rate / 60) * mins);
-        // 1600 คือค่าการเผาผลาญพื้นฐาน (BMR) โดยประมาณ
-        document.getElementById('calOut').value = 1600 + burned; 
-    }
+  async function getExerciseRecommendation() {
+    const weight = document.getElementById('weight').value;
+    const recDiv = document.getElementById('recResult');
+    if (!weight) { recDiv.style.color='#ff7a7a'; recDiv.innerText='กรุณากรอกน้ำหนักก่อนครับ'; return; }
+    recDiv.style.color='rgba(255,200,150,0.7)'; recDiv.innerText='กำลังวิเคราะห์...';
+    setTimeout(() => {
+      recDiv.style.color='#ffb347';
+      recDiv.innerText = weight > 80 ?
+        '👉 แนะนำ: "เดินเร็ว" หรือ "ว่ายน้ำ" 30 นาที ลดแรงกระแทกข้อเข่า' :
+        '👉 แนะนำ: "เวทเทรนนิ่ง" สลับ "วิ่งจ๊อกกิ้ง" 45 นาที สร้างกล้ามและเผาผลาญไขมัน';
+    }, 800);
+  }
 
-   function generateExerciseAdvice() {
-        const weight = parseFloat(document.getElementById('weight').value);
-        const calIn = parseInt(document.getElementById('calIn').value) || 0;
-        
-        if (!weight || !calIn) {
-            alert("กรุณาระบุน้ำหนักและปริมาณแคลอรี่ที่รับประทาน เพื่อให้ระบบประมวลผลคำแนะนำ");
-            return;
-        }
-
-        // 1600 คือค่า BMR พื้นฐานโดยประมาณ
-        const netCal = calIn - 1600; 
-        let message = "";
-
-        // กรณีที่ทานมาไม่เกินค่าพื้นฐาน
-        if (netCal <= 0) {
-            message = `สถานะ: พลังงานสมดุลแล้ว\nคำแนะนำ: วันนี้คุณรับประทานอาหารในปริมาณที่เหมาะสมกับร่างกาย ควรเน้นการ "พักผ่อน" หรือยืดเหยียดร่างกายเบาๆ เพื่อฟื้นฟูกล้ามเนื้อครับ`;
-        } 
-        // กรณีมีพลังงานส่วนเกิน
-        else {
-            let activity = "";
-            let duration = 0;
-            let burnRate = 0;
-
-            if (weight > 85) {
-                // สำหรับคนน้ำหนักเยอะ เน้นกิจกรรมแรงกระแทกต่ำ
-                activity = "เดินเร็ว";
-                burnRate = 5; // ประมาณ 5 kcal ต่อนาที
-                duration = Math.ceil(netCal / burnRate);
-                message = `สถานะ: มีพลังงานส่วนเกิน ${netCal} kcal\nคำแนะนำ: เนื่องจากคุณมีน้ำหนักตัวเกินเกณฑ์ เพื่อความปลอดภัยของข้อต่อ\n\n👉 ควรออกกำลังกายด้วยการ: "${activity}" เป็นเวลา ${duration} นาที`;
-            } else {
-                // สำหรับคนน้ำหนักปกติ เน้น Cardio เข้มข้น
-                activity = "วิ่งจ็อกกิ้ง";
-                burnRate = 8; // ประมาณ 8 kcal ต่อนาที
-                duration = Math.ceil(netCal / burnRate);
-                message = `สถานะ: มีพลังงานส่วนเกิน ${netCal} kcal\nคำแนะนำ: คุณสามารถออกกำลังกายเพื่อเผาผลาญพลังงานส่วนเกินได้อย่างเต็มที่\n\n👉 ควรออกกำลังกายด้วยการ: "${activity}" เป็นเวลา ${duration} นาที`;
-            }
-        }
-
-        alert(`[ ระบบวิเคราะห์สุขภาพดิจิทัล ]\n\n${message}`);
-    }
-    // --- 3. ระบบสุขภาพจิต (9Q) ---
-    const questions = [
-        "1. เบื่อ ไม่สนใจอยากทำกิจกรรมต่างๆ", "2. ไม่สบายใจ ซึมเศร้า หรือท้อแท้",
-        "3. หลับยาก หรือหลับมากเกินไป", "4. เหนื่อยง่าย หรือไม่ค่อยมีแรง",
-        "5. เบื่ออาหาร หรือรับประทานมากเกินไป", "6. รู้สึกไม่ดีกับตนเอง หรือตำหนิตนเอง",
-        "7. สมาธิในการทำกิจกรรมต่างๆ ลดลง", "8. พูดหรือทำอะไรช้าลงจนผู้อื่นสังเกตเห็น",
-        "9. มีความคิดทำร้ายตนเอง หรือคิดว่าเสียชีวิตไปจะดีกว่า"
-    ];
-    const qContainer = document.getElementById('qContainer');
-    questions.forEach(q => {
-        qContainer.innerHTML += `
-            <div class="form-group">
-                <label>${q}</label>
-                <select class="q-score">
-                    <option value="0">ไม่มีอาการ</option>
-                    <option value="1">มีอาการบางวัน</option>
-                    <option value="2">มีอาการบ่อย (เกิน 1 สัปดาห์)</option>
-                    <option value="3">มีอาการทุกวัน</option>
-                </select>
-            </div>`;
-    });
-
-    function checkMental() {
-        let total = 0;
-        document.querySelectorAll('.q-score').forEach(s => total += parseInt(s.value));
-        const statusBox = document.getElementById('mentalStatusBox');
-        statusBox.style.display = 'block';
-
-        let res = total <= 6 ? ["ระดับปกติ", "#27ae60", "อยู่ในเกณฑ์ปกติ ไม่พบอาการของโรคซึมเศร้า"] :
-                  total <= 12 ? ["ระดับน้อย", "#f1c40f", "มีอาการระดับน้อย ควรสังเกตอาการและพักผ่อนอย่างเพียงพอ"] :
-                  total <= 18 ? ["ระดับปานกลาง", "#e67e22", "มีอาการระดับปานกลาง แนะนำให้ปรึกษาผู้ที่ไว้วางใจหรือนักจิตวิทยา"] :
-                                ["ระดับรุนแรง", "#e74c3c", "มีอาการระดับรุนแรง แนะนำให้ปรึกษาจิตแพทย์เพื่อรับการตรวจวินิจฉัย"];
-
-        statusBox.innerText = `ผลการวิเคราะห์: ${res[0]} (${total} คะแนน)`;
-        statusBox.style.backgroundColor = res[1];
-        statusBox.style.color = (total > 6 && total <= 12) ? "#000" : "#fff";
-        document.getElementById('mentalAdvice').innerText = res[2];
-
-        const ctx = document.getElementById('mentalChart').getContext('2d');
-        if (mentalPieChart) mentalPieChart.destroy();
-        mentalPieChart = new Chart(ctx, {
-            type: 'pie',
-            data: { 
-                labels: ['คะแนนที่ได้', 'เกณฑ์ที่เหลือ'], 
-                datasets: [{ data: [total, 27-total], backgroundColor: [res[1], '#f1f2f6'], borderWidth: 0 }] 
-            },
-            options: { 
-                animation: { duration: 1800, animateRotate: true, animateScale: true },
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
-    }
-
-    // --- 4. การจัดการข้อมูลและการเชื่อมต่อ API ---
-    document.getElementById('healthForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const payload = {
-            user_id: userId,
-            log_date: document.getElementById('logDate').value,
-            weight: parseFloat(document.getElementById('weight').value),
-            calories_in: parseInt(document.getElementById('calIn').value),
-            calories_out: parseInt(document.getElementById('calOut').value),
-            water_glass: parseInt(document.getElementById('water').value)
-        };
-        try {
-            const res = await fetch('http://localhost:5000/api/logs', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-                alert("บันทึกข้อมูลสำเร็จ");
-                loadData();
-            }
-        } catch (err) { console.error("บันทึกผิดพลาด:", err); }
-    });
-
-    async function loadData() {
-        try {
-            const userRes = await fetch(`http://localhost:5000/api/user/${userId}`);
-            const user = await userRes.json();
-            document.getElementById('usernameDisplay').innerText = user.username;
-
-            const logsRes = await fetch(`http://localhost:5000/api/logs/${userId}`);
-            const logs = await logsRes.json();
-            if (logs.length > 0) renderWeightChart(logs);
-        } catch (err) { console.error("โหลดข้อมูลผิดพลาด:", err); }
-    }
-
-    function renderWeightChart(logs) {
-        const ctx = document.getElementById('weightChart').getContext('2d');
-        const data = [...logs].reverse();
-        if (weightLineChart) weightLineChart.destroy();
-        weightLineChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: data.map(l => new Date(l.log_date).toLocaleDateString('th-TH')),
-                datasets: [{ 
-                    label: 'น้ำหนักตัว (กก.)', 
-                    data: data.map(l => l.weight), 
-                    borderColor: '#2980b9', 
-                    backgroundColor: 'rgba(41, 128, 185, 0.1)',
-                    fill: true,
-                    tension: 0.3 
-                }]
-            }
-        });
-    }
-
-    function logout() { localStorage.clear(); window.location.href = 'login.html'; }
-    window.onload = () => { 
-        document.getElementById('logDate').valueAsDate = new Date(); 
-        loadData(); 
+  document.getElementById('healthForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+      user_id: userId,
+      log_date: document.getElementById('logDate').value,
+      weight: document.getElementById('weight').value,
+      calories_in: document.getElementById('calIn').value,
+      calories_out: document.getElementById('calOut').value,
+      water_glass: document.getElementById('water').value
     };
+    const exTypeSelect = document.getElementById('exType');
+    const exPayload = {
+      user_id: userId,
+      exercise_type: exTypeSelect.options[exTypeSelect.selectedIndex].text,
+      duration_minutes: document.getElementById('exDuration').value || 0,
+      calories_burned: document.getElementById('calOut').value || 0,
+      exercise_date: document.getElementById('logDate').value
+    };
+    try {
+      await fetch('http://localhost:5000/api/logs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+      if (exPayload.duration_minutes > 0 && exTypeSelect.value !== 'none') {
+        await fetch('http://localhost:5000/api/exercises', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(exPayload) });
+      }
+      showToast('✅ บันทึกข้อมูลสำเร็จ!');
+      location.reload();
+    } catch { alert('เกิดข้อผิดพลาด กรุณาตรวจสอบ Backend'); }
+  });
+
+  function renderComboChart(logs) {
+    const ordered = [...logs].reverse();
+    const canvas = document.getElementById('weightChart');
+    if (weightLineChart) weightLineChart.destroy();
+    Chart.getChart(canvas)?.destroy();
+    const ctx = canvas.getContext('2d');
+    const labels = ordered.map(l => new Date(l.log_date).toLocaleDateString('th-TH',{day:'numeric',month:'short'}));
+    weightLineChart = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels,
+        datasets:[
+          { label:'น้ำหนัก (กก.)', data:ordered.map(l=>Number(l.weight)), borderColor:'#ff4500', backgroundColor:'rgba(255,69,0,0.12)', fill:true, yAxisID:'y', tension:0.35, pointRadius:4, pointBackgroundColor:'#ff4500' },
+          { label:'เผาผลาญ (kcal)', data:ordered.map(l=>Number(l.calories_out||0)), borderColor:'#ff8c00', backgroundColor:'rgba(255,140,0,0.1)', fill:true, yAxisID:'y1', tension:0.35, pointRadius:4, pointBackgroundColor:'#ff8c00' }
+        ]
+      },
+      options:{
+        responsive:true, interaction:{mode:'index',intersect:false},
+        plugins:{ legend:{ labels:{color:'rgba(255,200,180,0.6)',font:{size:11}} } },
+        scales:{
+          x:{grid:{color:'rgba(255,69,0,0.05)'},ticks:{color:'rgba(255,200,180,0.45)',font:{size:11}}},
+          y:{beginAtZero:true,position:'left',grid:{color:'rgba(255,69,0,0.06)'},ticks:{color:'rgba(255,200,180,0.45)',font:{size:11}},title:{display:true,text:'น้ำหนัก (kg)',color:'rgba(255,200,180,0.4)'}},
+          y1:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false},ticks:{color:'rgba(255,200,180,0.45)',font:{size:11}},title:{display:true,text:'kcal',color:'rgba(255,200,180,0.4)'}}
+        }
+      }
+    });
+  }
+
+  function renderBurnTrendChart(trend) {
+    const canvas = document.getElementById('burnTrendChart');
+    if (burnTrendChart) burnTrendChart.destroy();
+    Chart.getChart(canvas)?.destroy();
+    if (!trend?.length) return;
+    const ctx = canvas.getContext('2d');
+    burnTrendChart = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels: trend.map(i=>i.day.replace(/\d{4}-/,'')),
+        datasets:[{ label:'เผาผลาญ (kcal)', data:trend.map(i=>i.burned), borderColor:'#ff6a00', backgroundColor:'rgba(255,106,0,0.15)', fill:true, tension:0.35, pointRadius:4, pointBackgroundColor:'#ff4500' }]
+      },
+      options:{
+        responsive:true, interaction:{mode:'index',intersect:false},
+        plugins:{legend:{labels:{color:'rgba(255,200,180,0.6)',font:{size:11}}}},
+        scales:{
+          x:{grid:{color:'rgba(255,69,0,0.05)'},ticks:{color:'rgba(255,200,180,0.45)',font:{size:11}}},
+          y:{beginAtZero:true,grid:{color:'rgba(255,69,0,0.06)'},ticks:{color:'rgba(255,200,180,0.45)',font:{size:11}}}
+        }
+      }
+    });
+  }
+
+  function updateLanguageText() {
+    const savedUser = localStorage.getItem('username') || 'user';
+    document.getElementById('usernameDisplay').innerText = savedUser;
+  }
+
+  function logout() { localStorage.clear(); window.location.href = 'login.html'; }
 </script>
 </body>
 </html>

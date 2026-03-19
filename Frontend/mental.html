@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mental Health — IT Body Patch</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #0c0501;
+      --surface:      rgba(22,8,3,0.92);
+      --surface2:     rgba(35,12,5,0.88);
+      --border:       rgba(255,80,20,0.2);
+      --border-bright:rgba(255,110,40,0.42);
+      --primary:      #ff4500;
+      --primary-b:    #ff6a00;
+      --primary-dim:  rgba(255,69,0,0.13);
+      --primary-glow: rgba(255,69,0,0.38);
+      --accent:       #ff8c00;
+      --purple:       #c084fc;
+      --purple-dim:   rgba(192,132,252,0.12);
+      --purple-glow:  rgba(192,132,252,0.3);
+      --teal:         #2dd4bf;
+      --yellow:       #fbbf24;
+      --danger:       #f87171;
+      --text:         #fff5ef;
+      --text-muted:   rgba(255,215,190,0.68);
+      --text-dim:     rgba(255,200,175,0.35);
+      --radius:       14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'IBM Plex Sans Thai', 'Barlow', sans-serif;
+      background:
+        radial-gradient(ellipse 60% 50% at 10% 8%, rgba(255,69,0,0.14) 0%, transparent 62%),
+        radial-gradient(ellipse 50% 55% at 88% 85%, rgba(192,132,252,0.08) 0%, transparent 58%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh; overflow-x: hidden;
+    }
+
+    /* ─── TOPBAR ─── */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(8,3,1,0.94);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px; height: 58px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 24px rgba(255,69,0,0.1);
+    }
+    .topbar::after { content:''; position:absolute;bottom:0;left:0;right:0;height:1px; background:linear-gradient(90deg,transparent,rgba(255,80,0,0.5),transparent); }
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .app-logo { font-family:'Barlow Condensed',sans-serif; font-size:1.239rem;font-weight:900;color:#fff; text-decoration:none;margin-right:4px;white-space:nowrap; text-shadow:0 0 20px rgba(255,100,0,0.4); }
+    .nav-pill { display:inline-flex;align-items:center;gap:5px; padding:6px 13px;border-radius:8px; font-family:'Barlow',sans-serif;font-weight:700;font-size:0.956rem; text-decoration:none;transition:all 0.2s;white-space:nowrap;border:1px solid transparent; }
+    .nav-pill.home { color:var(--text-muted);border-color:var(--border);background:var(--surface2); }
+    .nav-pill.home:hover { color:var(--primary-b);border-color:var(--border-bright);background:var(--primary-dim); }
+    .nav-pill.ex { background:rgba(255,69,0,0.12);color:var(--accent);border-color:rgba(255,140,0,0.3); }
+    .nav-pill.ex:hover { background:linear-gradient(135deg,#ff4500,#ff8c00);color:#fff;border-color:transparent; }
+    .nav-pill.active-mental { background:rgba(192,132,252,0.15);color:var(--purple);border-color:rgba(192,132,252,0.35); }
+    .topbar-right { display:flex;align-items:center;gap:12px; }
+    .user-chip { display:flex;align-items:center;gap:6px;font-size:0.968rem;color:var(--text-muted);white-space:nowrap; }
+    .pulse-dot { width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,0.8);animation:dotPulse 2s infinite; }
+    @keyframes dotPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
+    .user-name { color:#fff;font-weight:700;font-size:1.038rem; }
+    .btn-logout { padding:6px 14px;background:rgba(255,30,30,0.1);border:1px solid rgba(255,30,30,0.28); color:#ff7a7a;border-radius:7px;cursor:pointer;font-size:0.944rem;font-weight:700; font-family:inherit;transition:all 0.2s;white-space:nowrap; }
+    .btn-logout:hover { background:linear-gradient(135deg,#ff1f1f,#ff4500);color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(255,30,0,0.4); }
+
+    /* ─── LAYOUT ─── */
+    .page { max-width: 960px; margin: 0 auto; padding: 28px 24px; position: relative; z-index: 1; }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes floatIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ─── HERO ─── */
+    .hero { text-align:center; margin-bottom: 32px; animation: fadeUp 0.5s ease both; }
+    .hero-icon { font-size:3.5rem; margin-bottom:12px; filter:drop-shadow(0 0 22px rgba(192,132,252,0.7)); }
+    .hero h1 { font-family:'Barlow Condensed',sans-serif; font-size:1.8rem;font-weight:900;letter-spacing:0.5px; color:var(--text);margin-bottom:8px; }
+    .hero p { font-size:1.038rem;color:var(--text-muted);line-height:1.7;max-width:480px;margin:0 auto; }
+
+    /* ─── CARD ─── */
+    .card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:26px;
+      animation:fadeUp 0.45s ease both; margin-bottom:18px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,100,30,0.06);
+    }
+    .card:hover { border-color:var(--border-bright); box-shadow:0 12px 38px rgba(0,0,0,0.5); }
+
+    .card-title {
+      font-family:'Barlow Condensed',sans-serif; font-size:1.121rem;font-weight:800;letter-spacing:0.4px;
+      color:var(--text); display:flex;align-items:center;gap:8px;
+      margin-bottom:22px;padding-bottom:12px;border-bottom:1px solid var(--border);
+    }
+
+    /* ─── QUESTIONS ─── */
+    .q-list { display:flex;flex-direction:column;gap:16px; }
+    .q-item {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:12px; padding:16px 18px;
+      transition:transform 0.25s,border-color 0.2s,box-shadow 0.25s;
+      animation:floatIn 0.4s ease both;
+    }
+    .q-item:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,0.3); }
+    .q-item:focus-within { border-color:var(--purple); box-shadow:0 0 0 2px var(--purple-dim); }
+
+    .q-label { font-size:1.038rem;font-weight:500;color:var(--text);margin-bottom:12px;line-height:1.5;display:flex;align-items:flex-start;gap:10px; }
+    .q-num {
+      display:inline-flex;align-items:center;justify-content:center;
+      width:22px;height:22px;flex-shrink:0;
+      background:var(--purple-dim);border:1px solid rgba(192,132,252,0.3);
+      border-radius:6px;font-size:0.85rem;font-weight:700;color:var(--purple);
+    }
+
+    .q-options { display:grid;grid-template-columns:repeat(4,1fr);gap:8px; }
+    .q-opt { position:relative; }
+    .q-opt input[type="radio"] { position:absolute;opacity:0;width:0;height:0; }
+    .q-opt label {
+      display:block;text-align:center;padding:8px 6px;
+      background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
+      border-radius:8px;font-size:0.885rem;color:var(--text-muted);
+      cursor:pointer;transition:all 0.18s;line-height:1.4;
+      font-weight:400;margin-bottom:0;text-transform:none;letter-spacing:0;
+    }
+    .q-opt input[type="radio"]:checked + label {
+      background:var(--purple-dim);border-color:var(--purple);
+      color:var(--purple);font-weight:600;box-shadow:0 0 0 2px rgba(192,132,252,0.15);
+    }
+    .q-opt label:hover { border-color:rgba(192,132,252,0.4);color:var(--text); }
+
+    /* ─── BUTTON ─── */
+    .btn-assess {
+      width:100%;padding:13px;
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      color:#fff;border:none;border-radius:11px;
+      font-family:'Barlow',inherit;font-size:1.121rem;font-weight:700;
+      cursor:pointer;margin-top:22px;letter-spacing:0.3px;
+      box-shadow:0 4px 22px var(--primary-glow);transition:all 0.25s;
+      position:relative;overflow:hidden;
+    }
+    .btn-assess::after { content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,transparent 60%);pointer-events:none; }
+    .btn-assess:hover { transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,100,30,0.55);filter:brightness(1.06); }
+
+    /* ─── RESULT ─── */
+    .result-box { border-radius:14px;padding:22px 24px;margin-top:22px;display:none;animation:fadeUp 0.4s ease both;border:1px solid; }
+    .result-box.low  { background:rgba(45,212,191,0.07); border-color:rgba(45,212,191,0.3); }
+    .result-box.mid  { background:rgba(251,191,36,0.07);  border-color:rgba(251,191,36,0.3); }
+    .result-box.high { background:rgba(248,113,113,0.07); border-color:rgba(248,113,113,0.3); }
+
+    .result-score { font-family:'Barlow Condensed',sans-serif;font-size:2.4rem;font-weight:900;margin-bottom:4px;line-height:1; }
+    .result-box.low  .result-score { color:var(--teal); }
+    .result-box.mid  .result-score { color:var(--yellow); }
+    .result-box.high .result-score { color:var(--danger); }
+    .result-label { font-size:1.18rem;font-weight:700;margin-bottom:10px; }
+    .result-box.low  .result-label { color:var(--teal); }
+    .result-box.mid  .result-label { color:var(--yellow); }
+    .result-box.high .result-label { color:var(--danger); }
+    .result-desc { font-size:1.027rem;color:var(--text-muted);line-height:1.7; }
+    .result-bar-wrap { margin:16px 0 4px;background:rgba(255,255,255,0.06);border-radius:99px;height:8px;overflow:hidden; }
+    .result-bar { height:100%;border-radius:99px;transition:width 1s cubic-bezier(0.23,1,0.32,1); }
+    .result-box.low  .result-bar { background:var(--teal); }
+    .result-box.mid  .result-bar { background:var(--yellow); }
+    .result-box.high .result-bar { background:var(--danger); }
+    .result-hint { font-size:0.92rem;color:var(--text-dim);text-align:right;margin-top:4px; }
+
+    /* ─── HISTORY ─── */
+    .history-list { display:flex;flex-direction:column;gap:10px;max-height:300px;overflow-y:auto;padding-right:4px; }
+    .history-list::-webkit-scrollbar { width:4px; }
+    .history-list::-webkit-scrollbar-thumb { background:var(--border);border-radius:4px; }
+    .hist-item { display:flex;align-items:center;justify-content:space-between; background:var(--surface2);border:1px solid var(--border); border-radius:10px;padding:12px 16px;font-size:1.003rem; }
+    .hist-date { color:var(--text-muted);font-size:0.92rem; }
+    .hist-score { font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.239rem; }
+    .hist-level { font-size:0.85rem;padding:3px 9px;border-radius:6px;font-weight:700; }
+    .lv-low  { background:rgba(45,212,191,0.15);color:var(--teal); }
+    .lv-mid  { background:rgba(251,191,36,0.15); color:var(--yellow); }
+    .lv-high { background:rgba(248,113,113,0.15);color:var(--danger); }
+
+    .empty { text-align:center;padding:32px;color:var(--text-dim);font-size:1.027rem; }
+
+    /* magic ring */
+    .magic-ring { position:fixed;inset:0;display:flex;align-items:center;justify-content:center; background:rgba(5,2,1,0.75);z-index:9999;pointer-events:none; opacity:0;animation:ringScale 1.2s ease forwards; }
+    .magic-ring .inner { width:190px;height:190px;border-radius:50%;border:3px solid rgba(255,100,30,0.7); box-shadow:0 0 42px rgba(255,69,0,0.55),inset 0 0 26px rgba(255,140,0,0.25); display:flex;align-items:center;justify-content:center;text-align:center; color:#fff;font-size:1.298rem;font-weight:700;backdrop-filter:blur(2px); animation:ringGlow 1.2s ease-in-out infinite;position:relative;line-height:1.1; }
+    .magic-ring .inner .risk-title { display:block;white-space:nowrap;font-weight:600;font-size:1.038rem; }
+    .magic-ring .inner .risk-result { display:block;margin-top:6px;font-size:1.274rem;color:#ffd2b0;font-weight:700;white-space:nowrap; }
+    .magic-ring .inner::before { content:'';position:absolute;inset:-16px;border:2px dashed rgba(255,100,30,0.4);border-radius:50%;animation:rotateRing 2s linear infinite; }
+    @keyframes ringScale { 0%{opacity:0;transform:scale(0.6)} 60%{opacity:1;transform:scale(1.06)} 100%{opacity:1;transform:scale(1)} }
+    @keyframes ringGlow { 0%,100%{box-shadow:0 0 42px rgba(255,69,0,0.5),inset 0 0 26px rgba(255,140,0,0.2)} 50%{box-shadow:0 0 66px rgba(255,69,0,0.9),inset 0 0 38px rgba(255,140,0,0.35)} }
+    @keyframes rotateRing { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+
+    @media (max-width:600px) { .q-options{grid-template-columns:1fr 1fr;} .page{padding:20px 16px;} }
+    @media (max-width:400px) { .q-options{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-left">
+    <a href="index.html" class="app-logo">🏥 IT Body Patch</a>
+    <a href="index.html" class="nav-pill home">🏠 หน้าหลัก</a>
+    <a href="exercise.html" class="nav-pill ex">🏋️ Exercise</a>
+  </div>
+  <div class="topbar-right">
+    <div class="user-chip">
+      <span class="pulse-dot"></span>
+      <span style="color:rgba(255,200,180,0.45);font-size:0.92rem;">ผู้ใช้งาน:</span>
+      <span id="usernameDisplay" class="user-name">...</span>
+    </div>
+    <button class="btn-logout" onclick="logout()">ออกจากระบบ</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="hero" style="animation-delay:0.05s">
+    <div class="hero-icon">🧠</div>
+    <h1>แบบประเมินสุขภาพจิตเบื้องต้น</h1>
+    <p>ในช่วง 2 สัปดาห์ที่ผ่านมา คุณมีอาการเหล่านี้บ่อยแค่ไหน?<br>ตอบตามความเป็นจริงเพื่อผลที่แม่นยำที่สุด</p>
+  </div>
+
+  <div class="card" style="animation-delay:0.1s">
+    <div class="card-title">📋 แบบประเมิน PHQ-9</div>
+    <div class="q-list" id="qList"></div>
+    <button class="btn-assess" onclick="assess()">🔍 ประเมินผล</button>
+    <div class="result-box" id="resultBox">
+      <div class="result-score" id="resultScore"></div>
+      <div class="result-label" id="resultLabel"></div>
+      <div class="result-bar-wrap"><div class="result-bar" id="resultBar" style="width:0%"></div></div>
+      <div class="result-hint">คะแนน <span id="resultScoreNum"></span> / 27</div>
+      <div class="result-desc" id="resultDesc"></div>
+    </div>
+  </div>
+
+  <div class="card" style="animation-delay:0.15s">
+    <div class="card-title">
+      📅 ประวัติการประเมิน
+      <span style="margin-left:auto;font-size:0.85rem;color:var(--text-dim);font-weight:400;">บันทึกใน browser นี้</span>
+    </div>
+    <div class="history-list" id="histList">
+      <div class="empty">ยังไม่มีประวัติการประเมิน</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('usernameDisplay').innerText = localStorage.getItem('username') || 'user';
+
+  const questions = [
+    'รู้สึกเหม่อลอย ไม่สนใจสิ่งต่างๆ',
+    'รู้สึกหดหู่ ไม่มีแรง หมดหวัง',
+    'นอนไม่หลับ หรือนอนมากเกินไป',
+    'เบื่ออาหาร หรือกินมากเกินไป',
+    'รู้สึกฉุนเฉียวง่าย หรือระบายอารมณ์ยาก',
+    'รู้สึกว่าตนเองไร้ค่า หรือผิดพลาดมากเกินไป',
+    'โฟกัสสิ่งต่างๆ ได้ยาก',
+    'ขยับตัวช้าลง หรือกระสับกระส่ายมากขึ้น',
+    'มีความคิดทำร้ายตัวเอง หรืออยากเลิกมีชีวิต'
+  ];
+  const opts = ['ไม่มีเลย', 'เป็นบางวัน', 'มากกว่าครึ่งสัปดาห์', 'เกือบทุกวัน'];
+
+  const qList = document.getElementById('qList');
+  questions.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'q-item';
+    div.style.animationDelay = `${0.04*i}s`;
+    div.innerHTML = `
+      <div class="q-label"><span class="q-num">${i+1}</span>${q}</div>
+      <div class="q-options">
+        ${opts.map((o,v)=>`
+          <div class="q-opt">
+            <input type="radio" name="q${i}" id="q${i}v${v}" value="${v}" ${v===0?'checked':''}>
+            <label for="q${i}v${v}">${o}</label>
+          </div>`).join('')}
+      </div>`;
+    qList.appendChild(div);
+  });
+
+  function getScore() {
+    return questions.reduce((sum,_,i)=>{
+      const c = document.querySelector(`input[name="q${i}"]:checked`);
+      return sum+(c?parseInt(c.value):0);
+    },0);
+  }
+
+  function assess() {
+    const score = getScore();
+    const box = document.getElementById('resultBox');
+    const pct = Math.round((score/27)*100);
+    let level, labelText, desc, cls;
+    if (score<=4) {
+      cls='low'; level='😊 ปกติ'; labelText='สุขภาพจิตอยู่ในเกณฑ์ดี';
+      desc='คะแนนของคุณอยู่ในระดับปกติ ยิ้มเยอะๆ นะครับ ดูแลตัวเองต่อไปด้วยการพักผ่อนให้เพียงพอและออกกำลังกายสม่ำเสมอ 💚';
+    } else if (score<=9) {
+      cls='mid'; level='😐 ควรระวัง'; labelText='อาจมีอาการเครียด/ซึมเล็กน้อย';
+      desc='คะแนนบ่งชี้ว่าอาจมีความเครียดหรืออาการซึมเล็กน้อย แนะนำให้พักผ่อนให้เพียงพอ สังเกตอารมณ์ตัวเอง และพูดคุยกับคนที่ไว้ใจได้ 🧡';
+    } else if (score<=19) {
+      cls='high'; level='😟 เสี่ยงสูง'; labelText='เสี่ยงปานกลาง–สูง';
+      desc='คะแนนบ่งชี้ถึงอาการซึมเศร้าระดับกลาง–สูง แนะนำอย่างยิ่งให้ปรึกษาผู้เชี่ยวชาญด้านสุขภาพจิต หรือโทรสายด่วนสุขภาพจิต 1323 ตลอด 24 ชม. ❤️';
+    } else {
+      cls='high'; level='🆘 วิกฤต'; labelText='ต้องการความช่วยเหลือด่วน';
+      desc='คะแนนสูงมาก กรุณาติดต่อสายด่วนสุขภาพจิต 1323 หรือพบแพทย์โดยเร็วที่สุด คุณไม่ได้เผชิญสิ่งนี้คนเดียว ❤️';
+    }
+    box.className = `result-box ${cls} active`;
+    box.style.display = 'block';
+    document.getElementById('resultScore').innerText = score;
+    document.getElementById('resultLabel').innerText = labelText;
+    document.getElementById('resultScoreNum').innerText = score;
+    document.getElementById('resultDesc').innerText = desc;
+    document.getElementById('resultBar').style.width = '0%';
+    setTimeout(()=>{ document.getElementById('resultBar').style.width=pct+'%'; },50);
+    box.scrollIntoView({behavior:'smooth',block:'nearest'});
+    showMagicRing(level);
+    saveHistory(score, level, cls);
+    renderHistory();
+  }
+
+  function saveHistory(score, level, cls) {
+    const key = `mental_history_${localStorage.getItem('userId')||'1'}`;
+    const history = JSON.parse(localStorage.getItem(key)||'[]');
+    history.unshift({ score, level, cls, date: new Date().toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}) });
+    localStorage.setItem(key, JSON.stringify(history.slice(0,20)));
+  }
+
+  function renderHistory() {
+    const key = `mental_history_${localStorage.getItem('userId')||'1'}`;
+    const history = JSON.parse(localStorage.getItem(key)||'[]');
+    const list = document.getElementById('histList');
+    if (history.length===0) { list.innerHTML='<div class="empty">ยังไม่มีประวัติการประเมิน</div>'; return; }
+    list.innerHTML = history.map(h=>`
+      <div class="hist-item">
+        <div>
+          <div style="font-weight:700;margin-bottom:3px;">${h.level}</div>
+          <div class="hist-date">${h.date}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="hist-score" style="color:${h.cls==='low'?'var(--teal)':h.cls==='mid'?'var(--yellow)':'var(--danger)'}">${h.score}</div>
+          <span class="hist-level lv-${h.cls}">${h.score}/27</span>
+        </div>
+      </div>`).join('');
+  }
+  renderHistory();
+
+  function showMagicRing(text) {
+    const existing = document.querySelector('.magic-ring');
+    if (existing) existing.remove();
+    const ring = document.createElement('div');
+    ring.className = 'magic-ring';
+    ring.innerHTML = `<div class="inner"><span class="risk-title">ผลการประเมินรอบนี้</span><br><strong class="risk-result">${text}</strong></div>`;
+    document.body.appendChild(ring);
+    setTimeout(()=>ring.style.opacity='0',2200);
+    setTimeout(()=>ring.remove(),2500);
+  }
+
+  function logout() { localStorage.clear(); window.location.href='login.html'; }
+</script>
+</body>
+</html>

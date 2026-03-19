@@ -1,102 +1,165 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>สมัครสมาชิก - Health Tracker</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .register-container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 480px; }
-        h2 { text-align: center; color: #333; margin-bottom: 1.5rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.4rem; color: #555; font-size: 0.9rem; font-weight: bold; }
-        input, select { width: 100%; padding: 0.7rem; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        button { width: 100%; padding: 0.9rem; background-color: #007bff; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; margin-top: 1rem; }
-        button:hover { background-color: #0056b3; }
-        .login-link { text-align: center; margin-top: 1.2rem; font-size: 0.9rem; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สมัครสมาชิก — IT Body Patch</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 10%, rgba(255,69,0,0.2) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 80% 90%, rgba(255,140,0,0.13) 0%, transparent 58%),
+        #0f0602;
+    }
+
+    .auth-card { animation: cardIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards; opacity: 0; }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(28px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .col2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 520px) { .col2 { grid-template-columns: 1fr; } }
+
+    .section-label {
+      font-size: 0.826rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.5px; color: var(--text-dim);
+      margin: 18px 0 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    .step-bar {
+      display: flex; align-items: center; gap: 0;
+      margin-bottom: 28px; background: rgba(255,69,0,0.08);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 3px; overflow: hidden;
+    }
+    .step-seg {
+      flex: 1; height: 4px; border-radius: 6px;
+      background: var(--primary-dim); margin: 0 2px;
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+    }
+    .step-seg.done {
+      background: var(--grad-fire);
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .form-group { animation: fadeUp 0.35s ease both; }
+    .form-group:nth-child(1) { animation-delay: 0.08s; }
+    .form-group:nth-child(2) { animation-delay: 0.14s; }
+    .form-group:nth-child(3) { animation-delay: 0.20s; }
+  </style>
 </head>
 <body>
 
-<div class="register-container">
-    <h2>สมัครสมาชิกใหม่</h2>
-    <form id="registerForm">
-        <div class="form-group">
-            <label>ชื่อผู้ใช้งาน</label>
-            <input type="text" id="username" placeholder="Username" required>
-        </div>
-        
-        <div class="form-group">
-            <label>รหัสผ่าน</label>
-            <input type="password" id="password" placeholder="Password" required>
-        </div>
+<div class="auth-wrapper">
+  <div class="auth-card register-card">
 
-        <div class="grid">
-            <div class="form-group">
-                <label>เพศ</label>
-                <select id="regGender" required>
-                    <option value="male">ชาย</option>
-                    <option value="female">หญิง</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>อายุ (ปี)</label>
-                <input type="number" id="regAge" placeholder="25" required>
-            </div>
-        </div>
-
-        <div class="grid">
-            <div class="form-group">
-                <label>ส่วนสูง (cm)</label>
-                <input type="number" step="0.1" id="height" placeholder="170" required>
-            </div>
-            <div class="form-group">
-                <label>น้ำหนักเป้าหมาย (kg)</label>
-                <input type="number" step="0.1" id="target_weight" placeholder="60" required>
-            </div>
-        </div>
-
-        <button type="submit">ยืนยันการสมัคร</button>
-    </form>
-    
-    <div class="login-link">
-        มีบัญชีอยู่แล้ว? <a href="login.html" style="color: #007bff; text-decoration: none;">เข้าสู่ระบบ</a>
+    <div class="auth-logo">
+      <div class="logo-circle">🏥</div>
+      <h1>IT Body Patch</h1>
+      <p>ลงทะเบียนผู้ใช้งานใหม่</p>
     </div>
+
+    <div class="step-bar">
+      <div class="step-seg done"></div>
+      <div class="step-seg done"></div>
+      <div class="step-seg done"></div>
+    </div>
+
+    <form id="registerForm">
+
+      <div class="section-label">🔐 ข้อมูลบัญชี</div>
+      <div class="col2">
+        <div class="form-group">
+          <label>ชื่อผู้ใช้งาน</label>
+          <input type="text" id="username" placeholder="Username" autocomplete="username" required>
+        </div>
+        <div class="form-group">
+          <label>รหัสผ่าน</label>
+          <input type="password" id="password" placeholder="Password" autocomplete="new-password" required>
+        </div>
+      </div>
+
+      <div class="section-label">👤 ข้อมูลทั่วไป</div>
+      <div class="col2">
+        <div class="form-group">
+          <label>เพศ</label>
+          <select id="regGender">
+            <option value="ชาย">ชาย</option>
+            <option value="หญิง">หญิง</option>
+            <option value="อื่นๆ">อื่นๆ</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>อายุ (ปี)</label>
+          <input type="number" id="regAge" placeholder="เช่น 25" required>
+        </div>
+      </div>
+
+      <div class="section-label">📏 ข้อมูลร่างกาย</div>
+      <div class="col2">
+        <div class="form-group">
+          <label>ส่วนสูง (ซม.)</label>
+          <input type="number" step="0.1" id="height" placeholder="เช่น 170" required>
+        </div>
+        <div class="form-group">
+          <label>น้ำหนักเป้าหมาย (กก.)</label>
+          <input type="number" step="0.1" id="target_weight" placeholder="เช่น 65" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-save" style="margin-top: 10px;">🚀 ยืนยันการลงทะเบียน</button>
+    </form>
+
+    <div class="auth-footer">
+      มีบัญชีผู้ใช้งานอยู่แล้ว? <a href="login.html">เข้าสู่ระบบ</a>
+    </div>
+  </div>
 </div>
 
 <script>
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const payload = {
-            username: document.getElementById('username').value,
-            password: document.getElementById('password').value,
-            gender: document.getElementById('regGender').value,
-            age: parseInt(document.getElementById('regAge').value),
-            height: parseFloat(document.getElementById('height').value),
-            target_weight: parseFloat(document.getElementById('target_weight').value)
-        };
+  document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.textContent = 'กำลังสมัคร...';
+    btn.disabled = true;
 
-        try {
-            const response = await fetch('http://localhost:5000/api/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+    const payload = {
+      username:      document.getElementById('username').value,
+      password:      document.getElementById('password').value,
+      gender:        document.getElementById('regGender').value,
+      age:           parseInt(document.getElementById('regAge').value),
+      height:        parseFloat(document.getElementById('height').value),
+      target_weight: parseFloat(document.getElementById('target_weight').value)
+    };
 
-            if (response.ok) {
-                alert('สมัครสมาชิกสำเร็จแล้วครับ!');
-                window.location.href = 'login.html';
-            } else {
-                const err = await response.json();
-                alert('สมัครไม่สำเร็จ: ' + err.message);
-            }
-        } catch (error) {
-            alert('เชื่อมต่อ Server ไม่ได้ เช็คว่ารัน nodemon หรือยัง?');
-        }
-    });
+    try {
+      const response = await fetch('http://localhost:5000/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        alert('ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบ');
+        window.location.href = 'login.html';
+      } else {
+        const err = await response.json();
+        alert('ไม่สามารถลงทะเบียนได้: ' + err.message);
+        btn.textContent = '🚀 ยืนยันการลงทะเบียน';
+        btn.disabled = false;
+      }
+    } catch {
+      alert('Server Error: กรุณาตรวจสอบการเชื่อมต่อฐานข้อมูล');
+      btn.textContent = '🚀 ยืนยันการลงทะเบียน';
+      btn.disabled = false;
+    }
+  });
 </script>
-
 </body>
 </html>

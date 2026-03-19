@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercise Dashboard — IT Body Patch</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #0c0501;
+      --surface:      rgba(22, 8, 3, 0.92);
+      --surface2:     rgba(35, 12, 5, 0.85);
+      --border:       rgba(255, 80, 20, 0.2);
+      --border-bright:rgba(255, 110, 40, 0.42);
+      --primary:      #ff4500;
+      --primary-b:    #ff6a00;
+      --primary-dim:  rgba(255,69,0,0.14);
+      --primary-glow: rgba(255,69,0,0.38);
+      --accent:       #ff8c00;
+      --accent-dim:   rgba(255,140,0,0.13);
+      --danger:       #ff1f1f;
+      --text:         #fff5ef;
+      --text-muted:   rgba(255,215,190,0.68);
+      --text-dim:     rgba(255,200,175,0.35);
+      --radius:       14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'IBM Plex Sans Thai', 'Barlow', sans-serif;
+      background:
+        radial-gradient(ellipse 65% 45% at 10% 6%, rgba(255,69,0,0.17) 0%, transparent 62%),
+        radial-gradient(ellipse 45% 55% at 90% 85%, rgba(255,140,0,0.1) 0%, transparent 57%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh; overflow-x: hidden;
+    }
+
+    /* ─── TOPBAR ─── */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(8,3,1,0.94);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px; height: 58px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 24px rgba(255,69,0,0.1);
+    }
+    .topbar::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,80,0,0.5), transparent);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .app-logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.239rem; font-weight: 900; color: #fff;
+      text-decoration: none; margin-right: 4px; white-space: nowrap;
+      text-shadow: 0 0 20px rgba(255,100,0,0.4);
+    }
+    .nav-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 13px; border-radius: 8px;
+      font-family: 'Barlow', sans-serif; font-weight: 700; font-size: 0.956rem;
+      text-decoration: none; transition: all 0.2s; white-space: nowrap; border: 1px solid transparent;
+    }
+    .nav-pill.home { color: var(--text-muted); border-color: var(--border); background: var(--surface2); }
+    .nav-pill.home:hover { color: var(--primary-b); border-color: var(--border-bright); background: var(--primary-dim); }
+    .nav-pill.active-ex { background: linear-gradient(135deg,rgba(255,69,0,0.28),rgba(255,140,0,0.2)); color: var(--accent); border-color: rgba(255,140,0,0.35); }
+    .nav-pill.mental { background: rgba(167,60,255,0.1); color: #c084fc; border-color: rgba(167,60,255,0.25); }
+    .nav-pill.mental:hover { background: linear-gradient(135deg,#7c3aed,#a855f7); color: #fff; border-color: transparent; }
+
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .user-chip { display: flex; align-items: center; gap: 6px; font-size: 0.968rem; color: var(--text-muted); white-space: nowrap; }
+    .pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.8); animation: dotPulse 2s infinite; }
+    @keyframes dotPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
+    .user-name { color: #fff; font-weight: 700; font-size: 1.038rem; }
+    .btn-logout {
+      padding: 6px 14px; background: rgba(255,30,30,0.1); border: 1px solid rgba(255,30,30,0.28);
+      color: #ff7a7a; border-radius: 7px; cursor: pointer; font-size: 0.944rem; font-weight: 700;
+      font-family: inherit; transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-logout:hover { background: linear-gradient(135deg,#ff1f1f,#ff4500); color: #fff; border-color: transparent; box-shadow: 0 4px 14px rgba(255,30,0,0.4); }
+
+    /* ─── LAYOUT ─── */
+    .page { max-width: 1280px; margin: 0 auto; padding: 24px; position: relative; z-index: 1; }
+
+    /* ─── STAT ROW ─── */
+    .stat-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 22px; }
+
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px 20px;
+      position: relative; overflow: hidden;
+      animation: fadeUp 0.45s ease both;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      cursor: default;
+    }
+    .stat-card:hover { transform: translateY(-5px) scale(1.01); box-shadow: 0 16px 36px rgba(0,0,0,0.45); border-color: var(--border-bright); }
+    .stat-card::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background: linear-gradient(90deg,var(--primary),transparent); }
+    .stat-card.orange::before { background: linear-gradient(90deg,var(--accent),transparent); }
+    .stat-card.blue::before { background: linear-gradient(90deg,#60a5fa,transparent); }
+    .stat-card.purple::before { background: linear-gradient(90deg,#a78bfa,transparent); }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+    .stat-label { font-size: 0.85rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-value { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; line-height: 1; margin-bottom: 4px; color: var(--primary); }
+    .stat-card.orange .stat-value { color: var(--accent); }
+    .stat-card.blue   .stat-value { color: #60a5fa; }
+    .stat-card.purple .stat-value { color: #a78bfa; font-size: 1.416rem; padding-top: 6px; }
+    .stat-sub { font-size: 0.885rem; color: var(--text-dim); }
+    .stat-icon { position: absolute; right: 16px; top: 14px; font-size: 1.55rem; opacity: 0.2; }
+
+    /* ─── MAIN GRID ─── */
+    .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .full-width { grid-column: 1 / -1; }
+    @media (max-width: 900px) { .stat-row{grid-template-columns:1fr 1fr;} .main-grid{grid-template-columns:1fr;} .full-width{grid-column:auto;} }
+
+    /* ─── CARD ─── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 22px;
+      animation: fadeUp 0.45s ease both;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .card:hover { border-color: var(--border-bright); box-shadow: 0 12px 36px rgba(0,0,0,0.4); }
+
+    .card-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.121rem; font-weight: 800; letter-spacing: 0.4px;
+      color: var(--text); display: flex; align-items: center; gap: 8px;
+      margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+    }
+    .badge {
+      background: var(--primary-dim); border: 1px solid var(--border-bright);
+      color: var(--accent); font-size: 0.767rem; padding: 2px 7px;
+      border-radius: 20px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+    }
+
+    /* ─── FORM ─── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { margin-bottom: 0; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+    input, select {
+      width: 100%; padding: 10px 12px;
+      background: rgba(15,6,2,0.8); border: 1px solid rgba(255,69,0,0.18);
+      border-radius: 9px; color: var(--text); font-family: inherit; font-size: 1.062rem;
+      outline: none; transition: all 0.22s; appearance: none;
+    }
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-dim); background: rgba(20,8,3,0.92); }
+    input::placeholder { color: var(--text-dim); }
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,120,60,0.5)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center; padding-right: 34px; cursor: pointer;
+    }
+    select option { background: #1a0804; }
+
+    .btn-save {
+      width: 100%; padding: 12px; margin-top: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff; border: none; border-radius: 10px;
+      font-family: 'Barlow', inherit; font-size: 1.086rem; font-weight: 700;
+      cursor: pointer; transition: all 0.25s; letter-spacing: 0.3px;
+      box-shadow: 0 4px 20px rgba(255,80,30,0.4); position: relative; overflow: hidden;
+    }
+    .btn-save::after { content:''; position:absolute;inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,transparent 60%); pointer-events:none; }
+    .btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,100,30,0.55); }
+    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .cal-preview {
+      background: var(--primary-dim); border: 1px solid var(--border-bright);
+      border-radius: 10px; padding: 12px 16px; margin-top: 14px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .cal-preview span { font-size: 0.968rem; color: var(--text-muted); }
+    .cal-preview strong { font-family: 'Barlow Condensed', sans-serif; font-size: 1.534rem; font-weight: 900; color: var(--accent); }
+
+    /* ─── CHART ─── */
+    .chart-wrap { position: relative; height: 220px; overflow: hidden; }
+
+    /* ─── BAR ─── */
+    .bar-list { display: flex; flex-direction: column; gap: 14px; }
+    .bar-meta { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.968rem; }
+    .bar-meta span { color: var(--text-muted); }
+    .bar-meta strong { color: var(--text); }
+    .bar-track { height: 8px; background: rgba(255,69,0,0.08); border-radius: 99px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 99px; width: 0; transition: width 0.8s cubic-bezier(0.23,1,0.32,1); }
+    .bar-item:hover .bar-fill { filter: brightness(1.15); }
+
+    /* ─── TABLE ─── */
+    .tbl-wrap { overflow-x: auto; max-height: 320px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,69,0,0.2) transparent; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      position: sticky; top: 0; background: rgba(25,10,4,0.95);
+      padding: 10px 14px; font-size: 0.85rem; font-weight: 700;
+      color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.4px;
+      text-align: left; border-bottom: 1px solid var(--border);
+    }
+    tbody td { padding: 11px 14px; font-size: 1.015rem; border-bottom: 1px solid rgba(255,69,0,0.06); color: var(--text-muted); }
+    tbody tr:hover td { background: rgba(255,69,0,0.04); }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .tag { display: inline-block; padding: 3px 9px; border-radius: 6px; font-size: 0.861rem; font-weight: 700; }
+    .tag-walk  { background: rgba(96,165,250,0.15); color: #60a5fa; }
+    .tag-run   { background: rgba(255,69,0,0.18);   color: var(--primary-b); }
+    .tag-bike  { background: rgba(255,140,0,0.15);  color: var(--accent); }
+    .tag-gym   { background: rgba(167,139,250,0.15);color: #a78bfa; }
+    .tag-other { background: rgba(255,255,255,0.07);color: var(--text-muted); }
+
+    .burn-val { color: var(--primary-b); font-weight: 800; font-family: 'Barlow Condensed', sans-serif; font-size: 1.18rem; }
+
+    /* ─── TOAST ─── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(255,69,0,0.92); border: 1px solid rgba(255,140,0,0.5);
+      color: #fff; padding: 10px 20px; border-radius: 12px;
+      font-size: 1.027rem; font-weight: 700; opacity: 0;
+      pointer-events: none; transition: all 0.3s; z-index: 9999;
+      box-shadow: 0 8px 30px rgba(255,69,0,0.4); backdrop-filter: blur(12px);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.err { background: rgba(220,30,30,0.9); border-color: rgba(255,80,80,0.4); }
+
+    /* ─── EMPTY ─── */
+    .empty { text-align: center; padding: 40px 20px; color: var(--text-dim); font-size: 1.015rem; }
+    .empty .icon { font-size: 2.5rem; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-left">
+    <a href="index.html" class="app-logo">🏥 IT Body Patch</a>
+    <a href="index.html" class="nav-pill home">🏠 หน้าหลัก</a>
+    <a href="mental.html" class="nav-pill mental">🧠 Mental Health</a>
+  </div>
+  <div class="topbar-right">
+    <div class="user-chip">
+      <span class="pulse-dot"></span>
+      <span style="color:rgba(255,200,180,0.45);font-size:0.92rem;">ผู้ใช้งาน:</span>
+      <span id="usernameDisplay" class="user-name">...</span>
+    </div>
+    <button class="btn-logout" onclick="logout()">ออกจากระบบ</button>
+  </div>
+</nav>
+
+<div class="page">
+  <!-- STAT ROW -->
+  <div class="stat-row">
+    <div class="stat-card" style="animation-delay:0.05s">
+      <div class="stat-icon">🔥</div>
+      <div class="stat-label">เผาผลาญสัปดาห์นี้</div>
+      <div class="stat-value" id="statWeekly">—</div>
+      <div class="stat-sub">kcal ใน 7 วัน</div>
+    </div>
+    <div class="stat-card orange" style="animation-delay:0.1s">
+      <div class="stat-icon">⏱️</div>
+      <div class="stat-label">เวลารวมสัปดาห์นี้</div>
+      <div class="stat-value" id="statDuration">—</div>
+      <div class="stat-sub">นาที</div>
+    </div>
+    <div class="stat-card blue" style="animation-delay:0.15s">
+      <div class="stat-icon">📅</div>
+      <div class="stat-label">วันที่ออกกำลังกาย</div>
+      <div class="stat-value" id="statDays">—</div>
+      <div class="stat-sub">วัน ใน 7 วัน</div>
+    </div>
+    <div class="stat-card purple" style="animation-delay:0.2s">
+      <div class="stat-icon">⭐</div>
+      <div class="stat-label">กิจกรรมยอดนิยม</div>
+      <div class="stat-value" id="statTop">—</div>
+      <div class="stat-sub">ของสัปดาห์นี้</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <!-- FORM -->
+    <div class="card" style="animation-delay:0.25s">
+      <div class="card-title">➕ บันทึกกิจกรรมใหม่ <span class="badge">LOG</span></div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>วันที่</label>
+          <input type="date" id="exDate">
+        </div>
+        <div class="form-group">
+          <label>ประเภทกิจกรรม</label>
+          <select id="exType" onchange="autoCalc()">
+            <option value="walk|4">🚶 เดินเร็ว</option>
+            <option value="run|8">🏃 วิ่ง</option>
+            <option value="swim|7">🏊 ว่ายน้ำ</option>
+            <option value="bike|6">🚴 ปั่นจักรยาน</option>
+            <option value="gym|5">🏋️ เวทเทรนนิ่ง</option>
+            <option value="yoga|3">🧘 โยคะ</option>
+            <option value="other|4">⚡ อื่นๆ</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>ระยะเวลา (นาที)</label>
+          <input type="number" id="exDuration" placeholder="เช่น 30" min="1" oninput="autoCalc()">
+        </div>
+        <div class="form-group">
+          <label>น้ำหนักตัว (กก.) — เพื่อคำนวณ</label>
+          <input type="number" id="exWeight" placeholder="เช่น 65" step="0.1" oninput="autoCalc()">
+        </div>
+      </div>
+
+      <div class="cal-preview">
+        <span>⚡ แคลอรี่ที่เผาผลาญ (ประมาณ)</span>
+        <strong id="calPreview">0 kcal</strong>
+      </div>
+
+      <div class="form-group" style="margin-top:12px;">
+        <label>แก้ไขแคลอรี่ด้วยตนเอง (ไม่บังคับ)</label>
+        <input type="number" id="exCalManual" placeholder="ปล่อยว่างเพื่อใช้ค่าคำนวณอัตโนมัติ">
+      </div>
+
+      <button class="btn-save" onclick="saveExercise()" id="saveBtn">💾 บันทึกกิจกรรม</button>
+    </div>
+
+    <!-- 7-DAY TREND -->
+    <div class="card" style="animation-delay:0.3s">
+      <div class="card-title">📈 แนวโน้มการเผาผลาญ 7 วัน</div>
+      <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+    </div>
+
+    <!-- ACTIVITY BARS -->
+    <div class="card" style="animation-delay:0.35s">
+      <div class="card-title">🏆 เปรียบเทียบแต่ละกิจกรรม <span class="badge">7 วัน</span></div>
+      <div class="bar-list" id="activityBars">
+        <div class="empty"><div class="icon">📊</div>กำลังโหลด...</div>
+      </div>
+    </div>
+
+    <!-- DONUT -->
+    <div class="card" style="animation-delay:0.4s">
+      <div class="card-title">🍩 สัดส่วนกิจกรรมทั้งหมด</div>
+      <div class="chart-wrap" style="height:200px;"><canvas id="donutChart"></canvas></div>
+    </div>
+
+    <!-- HISTORY TABLE -->
+    <div class="card full-width" style="animation-delay:0.45s">
+      <div class="card-title">📋 ประวัติกิจกรรมทั้งหมด <span class="badge" id="histCount">0 รายการ</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>วันที่</th><th>กิจกรรม</th><th>ระยะเวลา</th><th>เผาผลาญ</th>
+            </tr>
+          </thead>
+          <tbody id="histBody">
+            <tr><td colspan="4"><div class="empty"><div class="icon">⏳</div>กำลังโหลด...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const userId = localStorage.getItem('userId') || 1;
+  document.getElementById('usernameDisplay').innerText = localStorage.getItem('username') || 'user';
+  document.getElementById('exDate').valueAsDate = new Date();
+  const savedWeight = localStorage.getItem('lastWeight');
+  if (savedWeight) document.getElementById('exWeight').value = savedWeight;
+
+  function toast(msg, ok = true) {
+    const el = document.getElementById('toast');
+    el.innerText = msg;
+    el.className = 'toast show' + (ok ? '' : ' err');
+    setTimeout(() => el.classList.remove('show'), 2400);
+  }
+
+  const metMap = { walk:4, run:8, swim:7, bike:6, gym:5, yoga:3, other:4 };
+  function autoCalc() {
+    const [type] = document.getElementById('exType').value.split('|');
+    const mins = parseFloat(document.getElementById('exDuration').value) || 0;
+    const weight = parseFloat(document.getElementById('exWeight').value) || 65;
+    const kcal = Math.round(metMap[type||'walk'] * weight * (mins/60));
+    document.getElementById('calPreview').innerText = kcal > 0 ? `${kcal} kcal` : '0 kcal';
+    return kcal;
+  }
+
+  function getTagClass(type) {
+    if (!type) return 'tag-other';
+    const t = type.toLowerCase();
+    if (t.includes('เดิน')||t.includes('walk')) return 'tag-walk';
+    if (t.includes('วิ่ง')||t.includes('run')||t.includes('ว่าย')||t.includes('swim')) return 'tag-run';
+    if (t.includes('ปั่น')||t.includes('bike')) return 'tag-bike';
+    if (t.includes('เวท')||t.includes('gym')) return 'tag-gym';
+    return 'tag-other';
+  }
+
+  async function saveExercise() {
+    const typeOpt = document.getElementById('exType');
+    const typeText = typeOpt.options[typeOpt.selectedIndex].text;
+    const dur = parseInt(document.getElementById('exDuration').value);
+    const date = document.getElementById('exDate').value;
+    const manual = document.getElementById('exCalManual').value;
+    const weight = document.getElementById('exWeight').value;
+    const calAuto = autoCalc();
+    const calories = manual ? parseInt(manual) : calAuto;
+    if (!dur || dur < 1) { toast('กรุณากรอกระยะเวลา', false); return; }
+    if (!date) { toast('กรุณาเลือกวันที่', false); return; }
+    if (weight) localStorage.setItem('lastWeight', weight);
+
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.innerText = 'กำลังบันทึก...';
+    try {
+      const res = await fetch('http://localhost:5000/api/exercises', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ user_id:userId, exercise_type:typeText.replace(/^[\S]+\s/,''), duration_minutes:dur, calories_burned:calories, exercise_date:date })
+      });
+      if (res.ok) {
+        toast('✅ บันทึกกิจกรรมสำเร็จ!');
+        document.getElementById('exDuration').value = '';
+        document.getElementById('exCalManual').value = '';
+        document.getElementById('calPreview').innerText = '0 kcal';
+        loadAll();
+      } else { toast('❌ บันทึกไม่สำเร็จ', false); }
+    } catch { toast('❌ เชื่อมต่อ Server ไม่ได้', false); }
+    btn.disabled = false; btn.innerText = '💾 บันทึกกิจกรรม';
+  }
+
+  let trendChartObj, donutChartObj;
+  async function loadAll() {
+    try {
+      const [exRes, statsRes] = await Promise.all([
+        fetch(`http://localhost:5000/api/exercises/${userId}`),
+        fetch(`http://localhost:5000/api/stats/${userId}`)
+      ]);
+      const exercises = exRes.ok ? await exRes.json() : [];
+      const stats = statsRes.ok ? await statsRes.json() : null;
+      renderStats(exercises, stats);
+      renderHistory(exercises);
+      renderTrend(stats?.trend || []);
+      renderActivityBars(exercises);
+      renderDonut(exercises);
+    } catch { toast('⚠️ โหลดข้อมูลไม่สำเร็จ', false); }
+  }
+
+  function animateNumber(el, value, unit='') {
+    const start = Number(el.dataset.animatedValue||0);
+    const end = Number(value);
+    const duration = 550; const startTime = performance.now();
+    function step(now) {
+      const p = Math.min((now-startTime)/duration,1);
+      const current = Math.round(start+(end-start)*p);
+      el.textContent = `${current.toLocaleString()}${unit}`;
+      if (p<1) requestAnimationFrame(step); else el.dataset.animatedValue=end;
+    }
+    requestAnimationFrame(step);
+  }
+
+  function renderStats(exercises, stats) {
+    const weekAgo = new Date(Date.now()-7*86400000);
+    const thisWeek = exercises.filter(e=>new Date(e.exercise_date)>=weekAgo);
+    const weeklyBurn = thisWeek.reduce((s,e)=>s+(e.calories_burned||0),0);
+    const weeklyDur  = thisWeek.reduce((s,e)=>s+(e.duration_minutes||0),0);
+    const uniqueDays = new Set(thisWeek.map(e=>e.exercise_date?.split?.('T')?.[0]||e.exercise_date)).size;
+    const typeCount = {};
+    thisWeek.forEach(e=>{ typeCount[e.exercise_type]=(typeCount[e.exercise_type]||0)+1; });
+    const topAct = Object.entries(typeCount).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
+    animateNumber(document.getElementById('statWeekly'), weeklyBurn);
+    animateNumber(document.getElementById('statDuration'), weeklyDur);
+    document.getElementById('statTop').innerText = topAct;
+    animateNumber(document.getElementById('statDays'), uniqueDays);
+  }
+
+  function renderHistory(exercises) {
+    const body = document.getElementById('histBody');
+    document.getElementById('histCount').innerText = `${exercises.length} รายการ`;
+    if (exercises.length===0) { body.innerHTML=`<tr><td colspan="4"><div class="empty"><div class="icon">🏃</div>ยังไม่มีประวัติกิจกรรม</div></td></tr>`; return; }
+    body.innerHTML = exercises.map(e=>{
+      const d = new Date(e.exercise_date);
+      const dateStr = isNaN(d)?e.exercise_date:d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});
+      return `<tr>
+        <td style="color:var(--text-muted)">${dateStr}</td>
+        <td><span class="tag ${getTagClass(e.exercise_type)}">${e.exercise_type||'—'}</span></td>
+        <td>${e.duration_minutes} <span style="color:var(--text-dim);font-size:0.944rem">นาที</span></td>
+        <td class="burn-val">-${(e.calories_burned||0).toLocaleString()} kcal</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderTrend(trend) {
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    if (trendChartObj) trendChartObj.destroy();
+    const days = [];
+    for (let i=6;i>=0;i--) { const d=new Date(); d.setDate(d.getDate()-i); days.push(d.toISOString().split('T')[0]); }
+    const trendMap = Object.fromEntries((trend||[]).map(t=>[t.day,t.burned]));
+    const data = days.map(d=>trendMap[d]||0);
+    const isLast = (_, i) => i===data.length-1;
+    trendChartObj = new Chart(ctx, {
+      type:'bar',
+      data:{ labels:days.map(d=>d.slice(5)), datasets:[{ label:'เผาผลาญ (kcal)', data, backgroundColor:data.map((v,i)=>isLast(v,i)?'rgba(255,100,30,0.9)':'rgba(255,80,20,0.28)'), borderColor:'rgba(255,100,30,0.7)', borderWidth:1, borderRadius:6 }] },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        animation:{ duration:1000, easing:'easeOutQuart' },
+        plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y} kcal`}} },
+        scales:{
+          x:{ grid:{color:'rgba(255,69,0,0.06)'}, ticks:{color:'rgba(255,200,180,0.45)',font:{size:11}} },
+          y:{ beginAtZero:true, grid:{color:'rgba(255,69,0,0.07)'}, ticks:{color:'rgba(255,200,180,0.45)',font:{size:11}} }
+        }
+      }
+    });
+  }
+
+  function renderActivityBars(exercises) {
+    const container = document.getElementById('activityBars');
+    const weekAgo = new Date(Date.now()-7*86400000);
+    const thisWeek = exercises.filter(e=>new Date(e.exercise_date)>=weekAgo);
+    const map = {};
+    thisWeek.forEach(e=>{ if(!map[e.exercise_type]) map[e.exercise_type]={kcal:0,mins:0}; map[e.exercise_type].kcal+=e.calories_burned||0; map[e.exercise_type].mins+=e.duration_minutes||0; });
+    const entries = Object.entries(map).sort((a,b)=>b[1].kcal-a[1].kcal);
+    const maxKcal = entries[0]?.[1].kcal||1;
+    const colors = ['#ff4500','#ff8c00','#60a5fa','#a78bfa','#f97316','#fbbf24'];
+    if (entries.length===0) { container.innerHTML=`<div class="empty"><div class="icon">📊</div>ยังไม่มีข้อมูลสัปดาห์นี้</div>`; return; }
+    container.innerHTML = entries.map(([type,v],i)=>`
+      <div class="bar-item">
+        <div class="bar-meta"><span>${type}</span><strong>${v.kcal.toLocaleString()} kcal · ${v.mins} นาที</strong></div>
+        <div class="bar-track"><div class="bar-fill" data-width="${Math.round((v.kcal/maxKcal)*100)}" style="width:0%;background:${colors[i%colors.length]};transition:width 0.8s cubic-bezier(0.23,1,0.32,1) ${i*120}ms"></div></div>
+      </div>`).join('');
+    requestAnimationFrame(()=>{ container.querySelectorAll('.bar-fill').forEach(el=>{ el.style.width=el.dataset.width+'%'; }); });
+  }
+
+  function renderDonut(exercises) {
+    const canvas = document.getElementById('donutChart');
+    const ctx = canvas.getContext('2d');
+    if (donutChartObj) donutChartObj.destroy();
+    const map = {};
+    exercises.forEach(e=>{ map[e.exercise_type]=(map[e.exercise_type]||0)+(e.calories_burned||0); });
+    const entries = Object.entries(map).sort((a,b)=>b[1]-a[1]);
+    if (entries.length===0) return;
+    donutChartObj = new Chart(ctx, {
+      type:'doughnut',
+      data:{
+        labels:entries.map(e=>e[0]),
+        datasets:[{ data:entries.map(e=>e[1]), backgroundColor:['rgba(255,69,0,0.85)','rgba(255,140,0,0.8)','rgba(96,165,250,0.8)','rgba(167,139,250,0.8)','rgba(249,115,22,0.8)','rgba(251,191,36,0.8)'], borderColor:'rgba(12,5,1,0.8)', borderWidth:3, hoverOffset:10 }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'62%',
+        animation:{ animateRotate:true, duration:1400, easing:'easeInOutQuart' },
+        plugins:{ legend:{ position:'right', labels:{color:'rgba(255,200,180,0.6)',font:{size:11},padding:12,boxWidth:12} }, tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed.toLocaleString()} kcal`}} }
+      }
+    });
+  }
+
+  loadAll();
+  function logout() { localStorage.clear(); window.location.href='login.html'; }
+</script>
+</body>
+</html>
