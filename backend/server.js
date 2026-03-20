@@ -10,7 +10,7 @@ app.use(express.json());
 // Serve static frontend files
 app.use(express.static(path.join(__dirname, '../Frontend')));
 
-// --- 1. เชื่อมต่อ Database (Port 3307 ตามที่นายใช้) ---
+// --- เชื่อมต่อ Database ---
 const db = mysql.createConnection({
   host: 'localhost',
   port: 3307,
@@ -24,7 +24,7 @@ db.connect(err => {
     else console.log('System Connected: Database Ready');
 });
 
-// --- 2. API Routes ---
+// --- API Routes ---
 // สมัครสมาชิก (Register)
 app.post('/api/register', (req, res) => {
     const { username, password, gender, age, height, target_weight } = req.body;
@@ -33,23 +33,21 @@ app.post('/api/register', (req, res) => {
         return res.status(400).json({ message: "กรุณากรอกชื่อและรหัสผ่าน" });
     }
 
-    // 🚨 แก้ตรงนี้! เปลี่ยนให้ตรงกับฐานข้อมูลเป๊ะๆ (target_weigth) 🚨
     const sql = "INSERT INTO users (username, password, gender, age, height, target_weight) VALUES (?,?,?,?,?,?)";
     
-    // ใส่ค่าสำรอง (Default) กันเหนียวไว้ทุกช่อง
     const values = [
         username, 
         password, 
         gender || 'ชาย', 
         parseInt(age) || 0, 
         parseFloat(height) || 0, 
-        parseFloat(target_weight) || 0  // ตัวแปรยังชื่อเดิม แต่จะถูกส่งไปลงคอลัมน์ใหม่
+        parseFloat(target_weight) || 0 
     ];
 
     db.query(sql, values, (err) => {
         if (err) {
             console.error("❌ Error:", err.message);
-            // ดัก Error กรณีชื่อซ้ำ จะได้แจ้งผู้ใช้ชัดเจน
+            // ดัก Error กรณีชื่อซ้ำ
             if (err.code === 'ER_DUP_ENTRY') {
                 return res.status(400).json({ message: "ชื่อผู้ใช้นี้มีคนใช้แล้ว กรุณาเปลี่ยนชื่อใหม่" });
             }
@@ -97,12 +95,10 @@ app.get('/api/logs/:user_id', (req, res) => {
 });
 // --- API สำหรับตาราง exercises ---
 
-// 1. บันทึกกิจกรรมการออกกำลังกายรายครั้ง
+// บันทึกกิจกรรมการออกกำลังกายรายครั้ง
 app.post('/api/exercises', (req, res) => {
     const { user_id, exercise_type, duration_minutes, calories_burned, exercise_date } = req.body;
-    
-    // ถ้า DB ของคุณใช้ชื่อ table เดิมที่ typo คือ exercirses ให้แก้ตรงนี้
-    const exerciseTable = 'exercirses'; // หรือ 'exercises' ถ้าคุณแก้ชื่อ table แล้ว
+    const exerciseTable = 'exercirses';
     const sql = `INSERT INTO ${exerciseTable} (user_id, exercise_type, duration_minutes, calories_burned, exercise_date) VALUES (?,?,?,?,?)`;
     
     db.query(sql, [user_id, exercise_type, duration_minutes, calories_burned, exercise_date], (err, result) => {
@@ -114,10 +110,10 @@ app.post('/api/exercises', (req, res) => {
     });
 });
 
-// 2. ดึงประวัติการออกกำลังกายทั้งหมดของ user คนนั้น
+// ดึงประวัติการออกกำลังกายทั้งหมดของ user คนนั้น
 app.get('/api/exercises/:user_id', (req, res) => {
     const userId = req.params.user_id;
-    const exerciseTable = 'exercirses'; // ปรับตาม schema จริงของคุณ
+    const exerciseTable = 'exercirses'; 
     const sql = `SELECT * FROM ${exerciseTable} WHERE user_id = ? ORDER BY exercise_date DESC`;
     
     db.query(sql, [userId], (err, results) => {
@@ -129,10 +125,10 @@ app.get('/api/exercises/:user_id', (req, res) => {
     });
 });
 
-// 3. สรุปสถิติ (weekly burn, top activity, 7-day trend)
+// สรุปสถิติ (weekly burn, top activity, 7-day trend)
 app.get('/api/stats/:user_id', (req, res) => {
     const userId = req.params.user_id;
-    const exerciseTable = 'exercirses'; // ปรับตาม schema จริงของคุณ
+    const exerciseTable = 'exercirses'; 
 
     const summarySql = `
         SELECT
