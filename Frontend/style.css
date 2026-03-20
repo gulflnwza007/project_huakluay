@@ -17,7 +17,7 @@
   --accent-glow:rgba(255, 140, 0, 0.3);
 
   --danger:     #ff1f1f;
-  --success:    #22c55e;
+  --success:    #9ac522;
 
   --border:     rgba(255, 80, 20, 0.22);
   --border-bright: rgba(255, 100, 30, 0.45);
@@ -54,7 +54,7 @@ body::before {
     radial-gradient(ellipse 70% 40% at 50% 100%, rgba(255,30,0,0.08) 0%, transparent 55%);
 }
 
-/* ─── NAVIGATION ─── */
+/*  NAVIGATION */
 nav.topbar {
   background: rgba(8, 3, 1, 0.92);
   backdrop-filter: blur(20px);
@@ -94,7 +94,7 @@ nav.topbar::after {
   border-color: var(--border);
 }
 
-/* ─── CARDS ─── */
+/* CARDS */
 .container, .page {
   max-width: 1200px; margin: 0 auto; padding: 28px 24px;
   position: relative; z-index: 1;
@@ -121,7 +121,7 @@ nav.topbar::after {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── BUTTONS ─── */
+/* BUTTONS */
 .btn, .btn-save {
   background: var(--grad-fire);
   color: #fff;

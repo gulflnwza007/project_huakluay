@@ -71,6 +71,8 @@
     .nav-pill.active-ex { background: linear-gradient(135deg,rgba(255,69,0,0.28),rgba(255,140,0,0.2)); color: var(--accent); border-color: rgba(255,140,0,0.35); }
     .nav-pill.mental { background: rgba(167,60,255,0.1); color: #c084fc; border-color: rgba(167,60,255,0.25); }
     .nav-pill.mental:hover { background: linear-gradient(135deg,#7c3aed,#a855f7); color: #fff; border-color: transparent; }
+    .nav-pill.courses { background: rgba(251,191,36,0.12); color: #fbbf24; border-color: rgba(251,191,36,0.28); }
+    .nav-pill.courses:hover { background: linear-gradient(135deg,#d97706,#fbbf24); color: #1a0800; border-color: transparent; }
 
     .topbar-right { display: flex; align-items: center; gap: 12px; }
     .user-chip { display: flex; align-items: center; gap: 6px; font-size: 0.968rem; color: var(--text-muted); white-space: nowrap; }
@@ -238,6 +240,7 @@
     <a href="index.html" class="app-logo">🏥 IT Body Patch</a>
     <a href="index.html" class="nav-pill home">🏠 หน้าหลัก</a>
     <a href="mental.html" class="nav-pill mental">🧠 Mental Health</a>
+    <a href="courses.html" class="nav-pill courses">📦 คอร์ส</a>
   </div>
   <div class="topbar-right">
     <div class="user-chip">
@@ -439,7 +442,7 @@
       const stats = statsRes.ok ? await statsRes.json() : null;
       renderStats(exercises, stats);
       renderHistory(exercises);
-      renderTrend(stats?.trend || []);
+      renderTrend(exercises);
       renderActivityBars(exercises);
       renderDonut(exercises);
     } catch { toast('⚠️ โหลดข้อมูลไม่สำเร็จ', false); }
@@ -489,12 +492,35 @@
     }).join('');
   }
 
-  function renderTrend(trend) {
+  function renderTrend(exercises) {
     const ctx = document.getElementById('trendChart').getContext('2d');
     if (trendChartObj) trendChartObj.destroy();
+
+    // คำนวณ trendMap จาก exercises ทั้งหมดก่อน
+    const trendMap = {};
+    (exercises||[]).forEach(e => {
+      const raw = (e.exercise_date||''); const day = raw.includes('T') ? raw.split('T')[0] : raw.split(' ')[0];
+      if (day) trendMap[day] = (trendMap[day]||0) + (e.calories_burned||0);
+    });
+
+    // ใช้ local date ป้องกัน timezone ทำให้วันเบี้ยว (UTC+7)
+    const toLocalDate = (d) => {
+      const dt = new Date(d);
+      return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+    };
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+
+    const allDays = Object.keys(trendMap);
+    const latestDay = allDays.length > 0 ? allDays.sort().pop() : today;
+    const anchor = latestDay > today ? latestDay : today;
+
     const days = [];
-    for (let i=6;i>=0;i--) { const d=new Date(); d.setDate(d.getDate()-i); days.push(d.toISOString().split('T')[0]); }
-    const trendMap = Object.fromEntries((trend||[]).map(t=>[t.day,t.burned]));
+    for (let i=6;i>=0;i--) {
+      const d = new Date(anchor); d.setDate(d.getDate()-i);
+      days.push(toLocalDate(d));
+    }
+
     const data = days.map(d=>trendMap[d]||0);
     const isLast = (_, i) => i===data.length-1;
     trendChartObj = new Chart(ctx, {
